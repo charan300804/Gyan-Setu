@@ -59,8 +59,18 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
     console.log(values);
     
     let finalRedirectUrl = redirectUrl;
-    if ((role === 'Student' || role === 'Class Teacher' || role === 'Subject Teacher') && values.class) {
-      finalRedirectUrl = `${redirectUrl}?class=${encodeURIComponent(values.class)}`;
+    const queryParams = new URLSearchParams();
+
+    if (values.class) {
+      queryParams.append('class', values.class);
+    }
+    
+    if (role === 'Class Teacher' || role === 'Subject Teacher' || role === 'Principal') {
+      queryParams.append('role', role);
+    }
+
+    if (queryParams.toString()) {
+      finalRedirectUrl = `${redirectUrl}?${queryParams.toString()}`;
     }
     
     router.push(finalRedirectUrl);

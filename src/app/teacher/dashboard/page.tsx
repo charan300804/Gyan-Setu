@@ -25,6 +25,7 @@ const teacherNavItems: NavItem[] = [
 export default function TeacherDashboardPage() {
     const searchParams = useSearchParams();
     const selectedClass = searchParams.get('class');
+    const role = searchParams.get('role') || 'Subject Teacher'; // Default to Subject Teacher if no role
 
     const filteredStudents = selectedClass ? students.filter(s => s.class === selectedClass) : students;
 
@@ -39,7 +40,7 @@ export default function TeacherDashboardPage() {
   return (
     <DashboardLayout navItems={teacherNavItems}>
         <div className="space-y-8">
-            <h1 className="text-3xl font-bold font-headline">Teacher Dashboard {selectedClass && `- Class ${selectedClass}`}</h1>
+            <h1 className="text-3xl font-bold font-headline">{role.replace(/([A-Z])/g, ' $1')} Dashboard {selectedClass && `- Class ${selectedClass}`}</h1>
             <ChartContainer config={chartConfig}>
               <ProgressChart 
                   data={chartData} 
@@ -59,8 +60,8 @@ export default function TeacherDashboardPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Student</TableHead>
-                                <TableHead className="hidden sm:table-cell">Class</TableHead>
-                                <TableHead className="text-center">Overall Score</TableHead>
+                                {role === 'Class Teacher' && <TableHead className="text-center hidden sm:table-cell">Courses Completed</TableHead>}
+                                {role !== 'Class Teacher' && <TableHead className="text-center">Overall Score</TableHead>}
                                 <TableHead className="text-center hidden md:table-cell">Attendance</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -80,10 +81,19 @@ export default function TeacherDashboardPage() {
                                                 <span className='font-medium'>{student.name}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="hidden sm:table-cell">{student.class}</TableCell>
-                                        <TableCell className="text-center">
-                                            <Badge className={`${scoreColor} text-white`}>{student.overallScore}%</Badge>
-                                        </TableCell>
+
+                                        {role === 'Class Teacher' && (
+                                            <TableCell className="text-center hidden sm:table-cell">
+                                                <Badge variant="secondary">{student.completedCourses}</Badge>
+                                            </TableCell>
+                                        )}
+
+                                        {role !== 'Class Teacher' && (
+                                            <TableCell className="text-center">
+                                                <Badge className={`${scoreColor} text-white`}>{student.overallScore}%</Badge>
+                                            </TableCell>
+                                        )}
+                                        
                                         <TableCell className="text-center hidden md:table-cell">{student.attendance}%</TableCell>
                                         <TableCell className="text-right">
                                         <DropdownMenu>
