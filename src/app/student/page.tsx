@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CourseCard } from '@/components/dashboard/course-card';
 import { courses } from '@/lib/data';
 import { AdaptiveLearningTool } from '@/components/dashboard/adaptive-learning-tool';
+import { QrCodeGenerator } from '@/components/dashboard/qr-code-generator';
 
 const studentNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -25,23 +26,32 @@ export default function StudentDashboardPage() {
                 </CardHeader>
             </Card>
 
-            <AdaptiveLearningTool />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-8">
+                <AdaptiveLearningTool />
 
-            <div>
-                <h2 className="text-2xl font-bold mb-4 font-headline">Continue Learning</h2>
-                {inProgressCourses.length > 0 ? (
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {inProgressCourses.map(course => (
-                            <CourseCard key={course.id} course={course} />
-                        ))}
-                    </div>
-                ) : (
-                    <Card className="text-center p-8">
-                        <CardContent>
-                            <p className="text-muted-foreground">You have no courses in progress. Visit the courses page to start a new one!</p>
-                        </CardContent>
-                    </Card>
-                )}
+                <div>
+                    <h2 className="text-2xl font-bold mb-4 font-headline">Continue Learning</h2>
+                    {inProgressCourses.length > 0 ? (
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {inProgressCourses.map(course => (
+                                <CourseCard key={course.id} course={course} />
+                            ))}
+                        </div>
+                    ) : (
+                        <Card className="text-center p-8">
+                            <CardContent>
+                                <p className="text-muted-foreground">You have no courses in progress. Visit the courses page to start a new one!</p>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+              </div>
+
+              <div className="lg:col-span-1">
+                <QrCodeGenerator />
+              </div>
+
             </div>
 
             <div>
