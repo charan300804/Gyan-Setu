@@ -39,9 +39,9 @@ export default function Home() {
           <RoleCard 
             icon={<Users className="h-10 w-10 text-primary" />}
             title="Parents/Guardian"
-            description="View your child's performance reports and stay informed about their progress."
-            href="/parent/login"
-            actionText="Login to Portal"
+            description="Login with your child's credentials to view their performance reports and progress."
+            href="/student/login"
+            actionText="Login with Student ID"
           />
         </div>
       </div>
