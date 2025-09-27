@@ -24,21 +24,21 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <RoleCard 
             icon={<GraduationCap className="h-10 w-10 text-primary" />}
-            title="Student"
+            title="Students"
             description="Access your lessons, take quizzes, and track your learning journey."
             href="/student"
             actionText="Go to Dashboard"
           />
           <RoleCard 
             icon={<BookUser className="h-10 w-10 text-primary" />}
-            title="Teacher"
-            description="Monitor student progress, assign homework, and manage your classes."
+            title="School Administrator"
+            description="Manage classes, monitor student progress, and oversee school performance. For Class Teachers, Subject Teachers, and Principals."
             href="/teacher"
             actionText="Go to Dashboard"
           />
           <RoleCard 
             icon={<Users className="h-10 w-10 text-primary" />}
-            title="Parent"
+            title="Parents/Guardian"
             description="View your child's performance reports and stay informed about their progress."
             href="/parent"
             actionText="Go to Portal"
