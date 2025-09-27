@@ -5,6 +5,7 @@ export default function PrincipalLoginPage() {
     <LoginForm
       role="Principal"
       redirectUrl="/teacher/dashboard"
+      showRegistration={false}
     />
   );
 }

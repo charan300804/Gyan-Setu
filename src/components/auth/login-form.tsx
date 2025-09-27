@@ -34,9 +34,10 @@ const formSchema = z.object({
 type LoginFormProps = {
   role: string;
   redirectUrl: string;
+  showRegistration?: boolean;
 };
 
-export function LoginForm({ role, redirectUrl }: LoginFormProps) {
+export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginFormProps) {
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -113,7 +114,7 @@ export function LoginForm({ role, redirectUrl }: LoginFormProps) {
               <Button type="submit" className="w-full">
                 <LogIn className="mr-2" /> Login
               </Button>
-              {role === 'Student' && (
+              {role === 'Student' && showRegistration && (
                 <>
                   <div className="flex items-center w-full my-2">
                     <Separator className="flex-1" />
