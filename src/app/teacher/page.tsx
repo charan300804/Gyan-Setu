@@ -14,8 +14,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 const teacherNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
   { title: 'Dashboard', href: '/teacher', icon: 'LayoutDashboard' },
-  { title: 'Students', href: '/teacher', icon: 'Users' },
-  { title: 'Assignments', href: '/teacher', icon: 'BookUser' },
+  { title: 'Students', href: '/teacher/students', icon: 'Users' },
+  { title: 'Assignments', href: '/teacher/assignments', icon: 'BookUser' },
 ];
 
 export default function TeacherDashboardPage() {
