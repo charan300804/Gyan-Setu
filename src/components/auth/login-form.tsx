@@ -27,7 +27,7 @@ import Link from 'next/link';
 import { Separator } from '../ui/separator';
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email.' }),
+  email: z.string().min(1, { message: 'ID is required.' }),
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
@@ -53,7 +53,19 @@ export function LoginForm({ role, redirectUrl }: LoginFormProps) {
     router.push(redirectUrl);
   }
   
-  const backLink = role === "Student" ? "/" : "/teacher";
+  const backLink = role === "Student" || role === "Parent" ? "/" : "/teacher";
+  
+  const getLabel = () => {
+    if (role === 'Student') return 'Student ID';
+    if (role === 'Parent') return "Child's ID";
+    return 'Email / Staff ID';
+  }
+
+  const getPlaceholder = () => {
+    if (role === 'Student') return 'Your student ID';
+    if (role === 'Parent') return "Your child's student ID";
+    return 'you@example.com or staff ID';
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -72,10 +84,10 @@ export function LoginForm({ role, redirectUrl }: LoginFormProps) {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email / Staff ID</FormLabel>
+                    <FormLabel>{getLabel()}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="you@example.com"
+                        placeholder={getPlaceholder()}
                         {...field}
                       />
                     </FormControl>
