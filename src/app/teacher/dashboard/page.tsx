@@ -10,10 +10,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ChartContainer } from '@/components/ui/chart';
+import { QrCodeScanner } from '@/components/dashboard/qr-code-scanner';
 
 const teacherNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -40,7 +41,11 @@ export default function TeacherDashboardPage() {
   return (
     <DashboardLayout navItems={teacherNavItems}>
         <div className="space-y-8">
-            <h1 className="text-3xl font-bold font-headline">{role.replace(/([A-Z])/g, ' $1')} Dashboard {selectedClass && `- Class ${selectedClass}`}</h1>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h1 className="text-3xl font-bold font-headline">{role.replace(/([A-Z])/g, ' $1')} Dashboard {selectedClass && `- Class ${selectedClass}`}</h1>
+              <QrCodeScanner />
+            </div>
+
             <ChartContainer config={chartConfig}>
               <ProgressChart 
                   data={chartData} 
