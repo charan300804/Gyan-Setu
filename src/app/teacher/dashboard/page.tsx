@@ -1,3 +1,6 @@
+'use client';
+
+import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { NavItem } from '@/lib/types';
 import { students } from '@/lib/data';
@@ -20,7 +23,12 @@ const teacherNavItems: NavItem[] = [
 ];
 
 export default function TeacherDashboardPage() {
-    const chartData = students.map(s => ({ name: s.name, "Average Score": s.overallScore }));
+    const searchParams = useSearchParams();
+    const selectedClass = searchParams.get('class');
+
+    const filteredStudents = selectedClass ? students.filter(s => s.class === selectedClass) : students;
+
+    const chartData = filteredStudents.map(s => ({ name: s.name, "Average Score": s.overallScore }));
     const chartConfig = {
         "Average Score": {
           label: "Average Score",
@@ -31,11 +39,11 @@ export default function TeacherDashboardPage() {
   return (
     <DashboardLayout navItems={teacherNavItems}>
         <div className="space-y-8">
-            <h1 className="text-3xl font-bold font-headline">Teacher Dashboard</h1>
+            <h1 className="text-3xl font-bold font-headline">Teacher Dashboard {selectedClass && `- Class ${selectedClass}`}</h1>
             <ChartContainer config={chartConfig}>
               <ProgressChart 
                   data={chartData} 
-                  title="Class 6 Overall Performance"
+                  title={`Overall Performance${selectedClass ? `: Class ${selectedClass}` : ''}`}
                   description="Average scores across all subjects."
                   dataKey="Average Score"
                   xAxisKey="name"
@@ -58,7 +66,7 @@ export default function TeacherDashboardPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {students.map(student => {
+                            {filteredStudents.map(student => {
                                 const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
                                 const scoreColor = student.overallScore > 80 ? 'bg-green-500' : student.overallScore > 60 ? 'bg-yellow-500' : 'bg-red-500';
                                 return (
