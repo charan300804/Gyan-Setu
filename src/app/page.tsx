@@ -32,7 +32,7 @@ export default function Home() {
           <RoleCard 
             icon={<BookUser className="h-10 w-10 text-primary" />}
             title="School Administrator"
-            description="Manage classes, monitor student progress, and oversee school performance. For Class Teachers, Subject Teachers, and Principals."
+            description="For Class Teachers, Subject Teachers, and Principals. Manage classes, monitor student progress, and oversee school performance."
             href="/teacher/login"
             actionText="Login to Dashboard"
           />

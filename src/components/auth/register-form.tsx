@@ -22,34 +22,41 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { LogIn, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { Separator } from '../ui/separator';
 
 const formSchema = z.object({
+  fullName: z.string().min(1, { message: 'Full name is required.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
-  password: z.string().min(1, { message: 'Password is required.' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
 });
 
-type LoginFormProps = {
+type RegisterFormProps = {
   role: string;
   redirectUrl: string;
 };
 
-export function LoginForm({ role, redirectUrl }: LoginFormProps) {
+export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      fullName: '',
       email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // NOTE: This is a mock login.
-    // In a real application, you would handle authentication here.
+    // NOTE: This is a mock registration.
+    // In a real application, you would handle user creation here.
     console.log(values);
+    // Redirect to login page after registration.
     router.push(redirectUrl);
   }
 
@@ -60,17 +67,33 @@ export function LoginForm({ role, redirectUrl }: LoginFormProps) {
           <CardTitle className="text-3xl font-headline">
             Gyan<span className="text-accent">Setu</span>
           </CardTitle>
-          <CardDescription>{role} Login</CardDescription>
+          <CardDescription>{role} Registration</CardDescription>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Rohan Singh"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email / Student ID</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="you@example.com"
@@ -94,27 +117,28 @@ export function LoginForm({ role, redirectUrl }: LoginFormProps) {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
             <CardFooter className="flex-col gap-4">
               <Button type="submit" className="w-full">
-                <LogIn className="mr-2" /> Login
+                <UserPlus className="mr-2" /> Create Account
               </Button>
-              {role === 'Student' && (
-                <>
-                  <div className="flex items-center w-full my-2">
-                    <Separator className="flex-1" />
-                    <span className="px-4 text-xs text-muted-foreground">OR</span>
-                    <Separator className="flex-1" />
-                  </div>
-                  <Button variant="outline" asChild className="w-full">
-                    <Link href="/student/register">
-                      <UserPlus className="mr-2" />
-                      Create Student Account
-                    </Link>
-                  </Button>
-                </>
-              )}
-              <Button variant="link" size="sm" asChild className="w-full mt-4">
+              <Button variant="link" size="sm" asChild className="w-full">
+                <Link href="/student/login">Already have an account? Login</Link>
+              </Button>
+              <Button variant="link" size="sm" asChild className="w-full">
                 <Link href="/">&larr; Back to Home</Link>
               </Button>
             </CardFooter>
