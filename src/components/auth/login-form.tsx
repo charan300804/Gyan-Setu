@@ -52,6 +52,8 @@ export function LoginForm({ role, redirectUrl }: LoginFormProps) {
     console.log(values);
     router.push(redirectUrl);
   }
+  
+  const backLink = role === "Student" ? "/" : "/teacher";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -70,7 +72,7 @@ export function LoginForm({ role, redirectUrl }: LoginFormProps) {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email / Student ID</FormLabel>
+                    <FormLabel>Email / Staff ID</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="you@example.com"
@@ -115,7 +117,7 @@ export function LoginForm({ role, redirectUrl }: LoginFormProps) {
                 </>
               )}
               <Button variant="link" size="sm" asChild className="w-full mt-4">
-                <Link href="/">&larr; Back to Home</Link>
+                <Link href={backLink}>&larr; Back</Link>
               </Button>
             </CardFooter>
           </form>
