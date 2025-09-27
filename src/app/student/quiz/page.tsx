@@ -1,13 +1,12 @@
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import { QuizComponent } from '@/components/dashboard/quiz';
 import type { NavItem } from '@/lib/types';
-import { LayoutDashboard, BookOpen, BarChart, Trophy, Home } from 'lucide-react';
 
 const studentNavItems: NavItem[] = [
-    { title: 'Home', href: '/', icon: Home },
-    { title: 'Dashboard', href: '/student', icon: LayoutDashboard },
-    { title: 'Courses', href: '/student/courses', icon: BookOpen },
-    { title: 'Quizzes', href: '/student/quiz', icon: Trophy },
+    { title: 'Home', href: '/', icon: 'Home' },
+    { title: 'Dashboard', href: '/student', icon: 'LayoutDashboard' },
+    { title: 'Courses', href: '/student/courses', icon: 'BookOpen' },
+    { title: 'Quizzes', href: '/student/quiz', icon: 'Trophy' },
 ];
 
 export default function StudentQuizPage() {

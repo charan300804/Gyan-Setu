@@ -1,6 +1,5 @@
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { NavItem } from '@/lib/types';
-import { LayoutDashboard, BookUser, Users, Home } from 'lucide-react';
 import { students } from '@/lib/data';
 import { ProgressChart } from '@/components/dashboard/progress-chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,10 +12,10 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const teacherNavItems: NavItem[] = [
-  { title: 'Home', href: '/', icon: Home },
-  { title: 'Dashboard', href: '/teacher', icon: LayoutDashboard },
-  { title: 'Students', href: '/teacher', icon: Users },
-  { title: 'Assignments', href: '/teacher', icon: BookUser },
+  { title: 'Home', href: '/', icon: 'Home' },
+  { title: 'Dashboard', href: '/teacher', icon: 'LayoutDashboard' },
+  { title: 'Students', href: '/teacher', icon: 'Users' },
+  { title: 'Assignments', href: '/teacher', icon: 'BookUser' },
 ];
 
 export default function TeacherDashboardPage() {

@@ -6,6 +6,7 @@ import { SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMen
 import { cn } from '@/lib/utils';
 import type { NavItem } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
+import * as icons from 'lucide-react';
 
 type AppSidebarProps = {
   navItems: NavItem[];
@@ -30,7 +31,9 @@ export function AppSidebar({ navItems, className }: AppSidebarProps) {
         <Separator className='mx-4 w-auto bg-border' />
         <SidebarContent className="p-4">
             <SidebarMenu>
-            {navItems.map((item) => (
+            {navItems.map((item) => {
+              const Icon = icons[item.icon] as icons.LucideIcon;
+              return (
                 <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                     asChild
@@ -38,12 +41,13 @@ export function AppSidebar({ navItems, className }: AppSidebarProps) {
                     tooltip={item.title}
                 >
                     <Link href={item.href}>
-                    <item.icon />
+                    <Icon />
                     <span>{item.title}</span>
                     </Link>
                 </SidebarMenuButton>
                 </SidebarMenuItem>
-            ))}
+              )
+            })}
             </SidebarMenu>
         </SidebarContent>
     </div>

@@ -1,6 +1,5 @@
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { NavItem } from '@/lib/types';
-import { LayoutDashboard, BarChart, Bell, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { students, courses } from '@/lib/data';
 import { ProgressChart } from '@/components/dashboard/progress-chart';
@@ -8,10 +7,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const parentNavItems: NavItem[] = [
-  { title: 'Home', href: '/', icon: Home },
-  { title: 'Dashboard', href: '/parent', icon: LayoutDashboard },
-  { title: 'Reports', href: '/parent', icon: BarChart },
-  { title: 'Notifications', href: '/parent', icon: Bell },
+  { title: 'Home', href: '/', icon: 'Home' },
+  { title: 'Dashboard', href: '/parent', icon: 'LayoutDashboard' },
+  { title: 'Reports', href: '/parent', icon: 'BarChart' },
+  { title: 'Notifications', href: '/parent', icon: 'Bell' },
 ];
 
 export default function ParentDashboardPage() {

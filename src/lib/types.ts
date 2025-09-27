@@ -1,9 +1,12 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon, LucideProps } from "lucide-react";
+import type { ForwardRefExoticComponent, RefAttributes } from "react";
+
+export type IconName = keyof typeof import("lucide-react");
 
 export type NavItem = {
   title: string;
   href: string;
-  icon: LucideIcon;
+  icon: IconName;
   label?: string;
 };
 

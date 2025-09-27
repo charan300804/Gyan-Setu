@@ -1,16 +1,15 @@
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import { NavItem } from '@/lib/types';
-import { LayoutDashboard, BookOpen, BarChart, Trophy, Home } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CourseCard } from '@/components/dashboard/course-card';
 import { courses } from '@/lib/data';
 import { AdaptiveLearningTool } from '@/components/dashboard/adaptive-learning-tool';
 
 const studentNavItems: NavItem[] = [
-  { title: 'Home', href: '/', icon: Home },
-  { title: 'Dashboard', href: '/student', icon: LayoutDashboard },
-  { title: 'Courses', href: '/student/courses', icon: BookOpen },
-  { title: 'Quizzes', href: '/student/quiz', icon: Trophy },
+  { title: 'Home', href: '/', icon: 'Home' },
+  { title: 'Dashboard', href: '/student', icon: 'LayoutDashboard' },
+  { title: 'Courses', href: '/student/courses', icon: 'BookOpen' },
+  { title: 'Quizzes', href: '/student/quiz', icon: 'Trophy' },
 ];
 
 export default function StudentDashboardPage() {
