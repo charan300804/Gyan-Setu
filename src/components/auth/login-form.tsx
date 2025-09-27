@@ -25,10 +25,13 @@ import { Input } from '@/components/ui/input';
 import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from '../ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { students } from '@/lib/data';
 
 const formSchema = z.object({
   email: z.string().min(1, { message: 'ID is required.' }),
   password: z.string().min(1, { message: 'Password is required.' }),
+  class: z.string().optional(),
 });
 
 type LoginFormProps = {
@@ -44,14 +47,23 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
     defaultValues: {
       email: '',
       password: '',
+      class: '',
     },
   });
+
+  const availableClasses = Array.from(new Set(students.map(s => s.class)));
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     // NOTE: This is a mock login.
     // In a real application, you would handle authentication here.
     console.log(values);
-    router.push(redirectUrl);
+    
+    let finalRedirectUrl = redirectUrl;
+    if (role === 'Student' && values.class) {
+      finalRedirectUrl = `${redirectUrl}?class=${encodeURIComponent(values.class)}`;
+    }
+    
+    router.push(finalRedirectUrl);
   }
   
   const backLink = role === "Student" || role === "Parent" ? "/" : "/teacher";
@@ -96,6 +108,28 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                   </FormItem>
                 )}
               />
+              {role === 'Student' && (
+                <FormField
+                  control={form.control}
+                  name="class"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Class</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your class" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {availableClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="password"
