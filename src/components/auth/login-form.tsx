@@ -59,7 +59,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
     console.log(values);
     
     let finalRedirectUrl = redirectUrl;
-    if ((role === 'Student' || role === 'Class Teacher') && values.class) {
+    if ((role === 'Student' || role === 'Class Teacher' || role === 'Subject Teacher') && values.class) {
       finalRedirectUrl = `${redirectUrl}?class=${encodeURIComponent(values.class)}`;
     }
     
@@ -108,7 +108,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                   </FormItem>
                 )}
               />
-              {(role === 'Student' || role === 'Class Teacher') && (
+              {(role === 'Student' || role === 'Class Teacher' || role === 'Subject Teacher') && (
                 <FormField
                   control={form.control}
                   name="class"
