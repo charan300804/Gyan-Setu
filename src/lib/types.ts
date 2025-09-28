@@ -8,6 +8,7 @@ export type NavItem = {
   href: string;
   icon: IconName;
   label?: string;
+  role?: 'Principal' | 'Teacher';
 };
 
 export type Course = {
@@ -28,6 +29,14 @@ export type Student = {
   overallScore: number;
   attendance: number;
   completedCourses: number;
+};
+
+export type Teacher = {
+    id: string;
+    name: string;
+    role: 'Class Teacher' | 'Subject Teacher';
+    assignment: string;
+    avatarId: string;
 };
 
 export type QuizQuestion = {

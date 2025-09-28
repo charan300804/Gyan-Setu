@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import type { NavItem } from '@/lib/types';
@@ -23,7 +23,16 @@ const Logo = () => {
 
 export function AppSidebar({ navItems }: { navItems: NavItem[] }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role');
   const { open } = useSidebar();
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.role && item.role !== role) {
+        return false;
+    }
+    return true;
+  });
 
   return (
     <>
@@ -36,7 +45,7 @@ export function AppSidebar({ navItems }: { navItems: NavItem[] }) {
         <Separator className='mx-4 w-auto bg-border' />
         <SidebarContent className="p-4">
             <SidebarMenu>
-            {navItems.map((item) => {
+            {filteredNavItems.map((item) => {
               const Icon = icons[item.icon] as icons.LucideIcon;
               return (
                 <SidebarMenuItem key={item.href}>
@@ -45,7 +54,7 @@ export function AppSidebar({ navItems }: { navItems: NavItem[] }) {
                     isActive={pathname === item.href}
                     tooltip={item.title}
                 >
-                    <Link href={item.href}>
+                    <Link href={`${item.href}?${searchParams.toString()}`}>
                     <Icon />
                     <span className={cn(!open && "hidden")}>{item.title}</span>
                     </Link>

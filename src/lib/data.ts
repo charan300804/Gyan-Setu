@@ -1,4 +1,4 @@
-import type { Course, Student, Quiz, ChatContact, Conversation } from './types';
+import type { Course, Student, Quiz, ChatContact, Conversation, Teacher } from './types';
 
 export const courses: Course[] = [
   {
@@ -62,6 +62,14 @@ export const students: Student[] = [
   { id: '2', name: 'Priya Kaur', class: '6th A', avatarId: 'avatar-female-1', overallScore: 75, attendance: 88, completedCourses: 2 },
   { id: '3', name: 'Amit Sharma', class: '6th B', avatarId: 'avatar-male-1', overallScore: 91, attendance: 98, completedCourses: 5 },
   { id: '4', name: 'Simranjeet Gill', class: '6th B', avatarId: 'avatar-female-1', overallScore: 68, attendance: 85, completedCourses: 1 },
+];
+
+export const teachers: Teacher[] = [
+  { id: 'teacher-1', name: 'Mrs. Verma', role: 'Class Teacher', assignment: '6th A', avatarId: 'avatar-teacher' },
+  { id: 'teacher-2', name: 'Mr. Kumar', role: 'Class Teacher', assignment: '6th B', avatarId: 'avatar-teacher-male' },
+  { id: 'teacher-3', name: 'Ms. Reddy', role: 'Subject Teacher', assignment: 'Mathematics', avatarId: 'avatar-teacher' },
+  { id: 'teacher-4', name: 'Mr. Khan', role: 'Subject Teacher', assignment: 'Science', avatarId: 'avatar-teacher-male' },
+  { id: 'teacher-5', name: 'Mrs. Das', role: 'Subject Teacher', assignment: 'English', avatarId: 'avatar-teacher' },
 ];
 
 export const sampleQuiz: Quiz = {

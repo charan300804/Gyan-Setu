@@ -10,20 +10,27 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Users, BarChart2, Activity } from 'lucide-react';
+import { MoreHorizontal, Users, BarChart2, Activity, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { QrCodeScanner } from '@/components/dashboard/qr-code-scanner';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const teacherNavItems: NavItem[] = [
-  { title: 'Home', href: '/', icon: 'Home' },
-  { title: 'Dashboard', href: '/teacher/dashboard', icon: 'LayoutDashboard' },
-  { title: 'Students', href: '/teacher/students', icon: 'Users' },
-  { title: 'Assignments', href: '/teacher/assignments', icon: 'BookUser' },
-  { title: 'Messages', href: '/teacher/chat', icon: 'MessageSquare' },
+const baseNavItems: NavItem[] = [
+    { title: 'Home', href: '/', icon: 'Home' },
+    { title: 'Dashboard', href: '/teacher/dashboard', icon: 'LayoutDashboard' },
+    { title: 'Students', href: '/teacher/students', icon: 'Users' },
+    { title: 'Assignments', href: '/teacher/assignments', icon: 'BookUser' },
+    { title: 'Messages', href: '/teacher/chat', icon: 'MessageSquare' },
 ];
+
+const principalNavItems: NavItem[] = [
+    ...baseNavItems.slice(0, 3),
+    { title: 'Teachers', href: '/teacher/teachers', icon: 'UserCog', role: 'Principal' },
+    ...baseNavItems.slice(3)
+];
+
 
 export default function TeacherDashboardPage() {
     const searchParams = useSearchParams();
@@ -32,6 +39,8 @@ export default function TeacherDashboardPage() {
 
     const selectedClass = searchParams.get('class');
     const role = searchParams.get('role') || 'Principal';
+    
+    const teacherNavItems = role === 'Principal' ? principalNavItems : baseNavItems;
 
     const filteredStudents = selectedClass ? students.filter(s => s.class === selectedClass) : students;
     const availableClasses = ['All Classes', ...Array.from(new Set(students.map(s => s.class)))];

@@ -55,6 +55,12 @@
       "imageHint": "teacher woman"
     },
     {
+      "id": "avatar-teacher-male",
+      "description": "Portrait of a male teacher.",
+      "imageUrl": "https://images.unsplash.com/photo-1577896851231-70ef18881754?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYWxlJTIwdGVhY2hlcnxlbnwwfHx8fDE3NTkwMzA5ODR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "teacher man"
+    },
+    {
       "id": "avatar-parent",
       "description": "Portrait of a parent.",
       "imageUrl": "https://images.unsplash.com/photo-1733947269652-6d9922531213?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxwYXJlbnQlMjBhZHVsdHxlbnwwfHx8fDE3NTg5NzE5MzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
