@@ -24,6 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { UserPlus } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -42,6 +43,7 @@ type RegisterFormProps = {
 
 export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,9 +55,19 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // NOTE: This is a mock registration.
-    // In a real application, you would handle user creation here.
-    console.log(values);
+    // Save credentials to localStorage
+    const credentials = {
+      fullName: values.fullName,
+      email: values.email,
+      password: values.password,
+    };
+    localStorage.setItem('studentCredentials', JSON.stringify(credentials));
+
+    toast({
+      title: "Registration Successful",
+      description: "Your account has been created. You can now log in.",
+    });
+    
     // Redirect to login page after registration.
     router.push(redirectUrl);
   }

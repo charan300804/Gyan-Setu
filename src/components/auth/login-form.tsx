@@ -27,6 +27,7 @@ import Link from 'next/link';
 import { Separator } from '../ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { students } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   email: z.string().min(1, { message: 'ID is required.' }),
@@ -42,6 +43,7 @@ type LoginFormProps = {
 
 export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,8 +56,29 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
   const availableClasses = Array.from(new Set(students.map(s => s.class)));
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // NOTE: This is a mock login.
-    // In a real application, you would handle authentication here.
+    // For students, check credentials against localStorage
+    if (role === 'Student') {
+      const storedStudentData = localStorage.getItem('studentCredentials');
+      if (storedStudentData) {
+        const studentCredentials = JSON.parse(storedStudentData);
+        if (values.email === studentCredentials.email && values.password === studentCredentials.password) {
+          // Credentials match
+          router.push(redirectUrl);
+          return;
+        }
+      }
+      // If no stored data or credentials don't match
+      form.setError('email', { type: 'manual', message: 'Invalid credentials. Please check your ID and password.' });
+      form.setError('password', { type: 'manual', message: ' ' }); // Clear password error if email is the issue
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
+      });
+      return;
+    }
+
+    // NOTE: This is a mock login for other roles.
     console.log(values);
     
     let finalRedirectUrl = redirectUrl;
@@ -79,13 +102,13 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
   const backLink = role === "Student" || role === "Parent" ? "/" : "/teacher";
   
   const getLabel = () => {
-    if (role === 'Student') return 'Student ID';
+    if (role === 'Student') return 'Student Email';
     if (role === 'Parent') return "Child's ID";
     return 'Email / Staff ID';
   }
 
   const getPlaceholder = () => {
-    if (role === 'Student') return 'Your student ID';
+    if (role === 'Student') return 'Your registered email';
     if (role === 'Parent') return "Your child's student ID";
     return 'you@example.com or staff ID';
   }
@@ -118,7 +141,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                   </FormItem>
                 )}
               />
-              {(role === 'Student' || role === 'Class Teacher' || role === 'Subject Teacher') && (
+              {(role === 'Class Teacher' || role === 'Subject Teacher') && (
                 <FormField
                   control={form.control}
                   name="class"
