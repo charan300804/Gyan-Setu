@@ -11,18 +11,17 @@ type DashboardLayoutProps = {
 
 export function DashboardLayout({ navItems, children }: DashboardLayoutProps) {
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen">
+    <SidebarProvider>
+      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] group-data-[state=collapsed]/sidebar-wrapper:md:grid-cols-[4rem_1fr]">
         <Sidebar collapsible='icon'>
           <AppSidebar navItems={navItems} />
-          <SidebarRail />
         </Sidebar>
-        <SidebarInset>
+        <div className='flex flex-col'>
           <AppHeader />
-          <main className="p-4 sm:p-6 lg:p-8">
+          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
             {children}
           </main>
-        </SidebarInset>
+        </div>
       </div>
     </SidebarProvider>
   );

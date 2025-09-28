@@ -2,31 +2,36 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
+import { SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import type { NavItem } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import * as icons from 'lucide-react';
+import { Button } from '../ui/button';
 
-type AppSidebarProps = {
-  navItems: NavItem[];
-  className?: string;
-};
+const Logo = () => {
+    const { open } = useSidebar();
+    return (
+        <Link href="/" className={cn(
+            "text-2xl font-bold font-headline text-primary tracking-tighter flex items-center gap-2",
+            !open && "justify-center"
+        )}>
+          Gyan<span className="text-accent">Setu</span>
+        </Link>
+    );
+}
 
-const Logo = () => (
-    <Link href="/" className="text-2xl font-bold font-headline text-primary tracking-tighter">
-      Gyan<span className="text-accent">Setu</span>
-    </Link>
-);
-
-
-export function AppSidebar({ navItems, className }: AppSidebarProps) {
+export function AppSidebar({ navItems }: { navItems: NavItem[] }) {
   const pathname = usePathname();
+  const { open } = useSidebar();
 
   return (
-    <div className={cn("flex flex-col h-full", className)}>
-        <SidebarHeader className="p-4">
-          <Logo />
+    <>
+        <SidebarHeader className="flex items-center justify-between p-4">
+          <div className={cn("transition-all duration-300 ease-in-out", open ? 'opacity-100' : 'opacity-0 w-0')}>
+            <Logo />
+          </div>
+          <SidebarTrigger className='h-8 w-8' />
         </SidebarHeader>
         <Separator className='mx-4 w-auto bg-border' />
         <SidebarContent className="p-4">
@@ -42,7 +47,7 @@ export function AppSidebar({ navItems, className }: AppSidebarProps) {
                 >
                     <Link href={item.href}>
                     <Icon />
-                    <span>{item.title}</span>
+                    <span className='group-data-[state=collapsed]/sidebar-wrapper:hidden'>{item.title}</span>
                     </Link>
                 </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -50,6 +55,6 @@ export function AppSidebar({ navItems, className }: AppSidebarProps) {
             })}
             </SidebarMenu>
         </SidebarContent>
-    </div>
+    </>
   );
 }

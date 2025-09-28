@@ -1,3 +1,5 @@
+'use client';
+
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import { NavItem } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,19 +23,19 @@ export default function StudentDashboardPage() {
   return (
     <DashboardLayout navItems={studentNavItems}>
         <div className="space-y-8">
-            <Card className="bg-primary/5 border-primary/20">
+            <Card className="bg-primary/5 border-primary/20 shadow-sm">
                 <CardHeader>
-                    <CardTitle className="font-headline text-3xl">Welcome Back, Rohan!</CardTitle>
+                    <CardTitle className="font-headline text-2xl md:text-3xl">Welcome Back, Rohan!</CardTitle>
                     <CardDescription>Ready to continue your learning journey? Let's make today productive.</CardDescription>
                 </CardHeader>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-8">
-                <div>
-                    <h2 className="text-2xl font-bold mb-4 font-headline">Continue Learning</h2>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+              <div className="xl:col-span-2 space-y-8">
+                <section>
+                    <h2 className="text-2xl font-bold mb-4 font-headline tracking-tight">Continue Learning</h2>
                     {inProgressCourses.length > 0 ? (
-                        <div className="grid gap-6 md:grid-cols-2">
+                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
                             {inProgressCourses.map(course => (
                                 <CourseCard key={course.id} course={course} />
                             ))}
@@ -48,21 +50,21 @@ export default function StudentDashboardPage() {
                             </CardContent>
                         </Card>
                     )}
-                </div>
-                <div>
-                    <h2 className="text-2xl font-bold mb-4 font-headline">Explore New Courses</h2>
-                    <div className="grid gap-6 md:grid-cols-2">
+                </section>
+                <section>
+                    <h2 className="text-2xl font-bold mb-4 font-headline tracking-tight">Explore New Courses</h2>
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
                         {courses.filter(c => c.progress === 0).slice(0, 2).map(course => (
                             <CourseCard key={course.id} course={course} />
                         ))}
                     </div>
-                </div>
+                </section>
               </div>
 
-              <div className="lg:col-span-1 space-y-8">
+              <aside className="xl:col-span-1 space-y-8">
                 <AdaptiveLearningTool />
                 <QrCodeGenerator />
-              </div>
+              </aside>
 
             </div>
         </div>

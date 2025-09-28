@@ -1,9 +1,8 @@
 'use client';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { NavItem } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { students, courses } from '@/lib/data';
-import { ProgressChart } from '@/components/dashboard/progress-chart';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { StudentSummary } from '@/components/dashboard/student-summary';
@@ -11,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BookOpen, CheckCircle2, Percent } from 'lucide-react';
 
 const teacherNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -34,8 +33,6 @@ export default function StudentProfilePage({ params }: { params: { studentId: st
     }
     
     const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
-    const chartData = courses.filter(c => c.progress > 0).map(c => ({ name: c.title, "Score": c.progress }));
-
 
     const studentPerformanceData = {
         name: student.name,
@@ -49,11 +46,11 @@ export default function StudentProfilePage({ params }: { params: { studentId: st
   return (
     <DashboardLayout navItems={teacherNavItems}>
         <div className="space-y-8">
-            <Button variant="outline" asChild>
+            <Button variant="ghost" asChild className='-ml-4'>
                 <Link href="/teacher/dashboard"><ArrowLeft className='mr-2' /> Back to Dashboard</Link>
             </Button>
-            <Card className="flex items-center p-6 gap-6">
-                <Avatar className='w-24 h-24'>
+            <Card className="flex flex-col sm:flex-row items-start sm:items-center p-6 gap-6 shadow-sm">
+                <Avatar className='w-24 h-24 border-4 border-background outline outline-2 outline-primary'>
                     <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint}/>
                     <AvatarFallback className="text-3xl">{student.name.charAt(0)}</AvatarFallback>
                 </Avatar>
@@ -63,27 +60,19 @@ export default function StudentProfilePage({ params }: { params: { studentId: st
                 </div>
             </Card>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                    <CardHeader><CardTitle>Overall Score</CardTitle></CardHeader>
-                    <CardContent><p className="text-4xl font-bold">{student.overallScore}%</p></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader><CardTitle>Attendance</CardTitle></CardHeader>
-                    <CardContent><p className="text-4xl font-bold">{student.attendance}%</p></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader><CardTitle>Courses Completed</CardTitle></CardHeader>
-                    <CardContent><p className="text-4xl font-bold">{student.completedCourses}</p></CardContent>
-                </Card>
-                <div className="lg:col-span-2 lg:row-start-1 lg:col-start-3">
-                    <StudentSummary studentData={studentPerformanceData} />
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                <StatCard icon={<Percent />} title="Overall Score" value={`${student.overallScore}%`} />
+                <StatCard icon={<CheckCircle2 />} title="Attendance" value={`${student.attendance}%`} />
+                <StatCard icon={<BookOpen />} title="Courses Completed" value={student.completedCourses.toString()} />
+                <div className="md:col-span-2 xl:col-span-1">
+                     <StudentSummary studentData={studentPerformanceData} />
                 </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">Course Progress</CardTitle>
+                    <CardTitle className="font-headline tracking-tight">Course Progress</CardTitle>
+                    <CardDescription>Detailed progress for each course the student is enrolled in.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {courses.map(course => (
@@ -92,7 +81,7 @@ export default function StudentProfilePage({ params }: { params: { studentId: st
                                 <h3 className="font-semibold">{course.title}</h3>
                                 <Badge variant={course.progress === 100 ? 'default' : 'secondary'}>{course.progress}%</Badge>
                             </div>
-                            <Progress value={course.progress} />
+                            <Progress value={course.progress} className="h-2" />
                         </div>
                     ))}
                 </CardContent>
@@ -101,4 +90,19 @@ export default function StudentProfilePage({ params }: { params: { studentId: st
         </div>
     </DashboardLayout>
   );
+}
+
+
+function StatCard({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) {
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <div className="text-muted-foreground">{icon}</div>
+            </CardHeader>
+            <CardContent>
+                <div className="text-3xl font-bold">{value}</div>
+            </CardContent>
+        </Card>
+    );
 }

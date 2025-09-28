@@ -10,10 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Users, BarChart2 } from 'lucide-react';
+import { MoreHorizontal, Users, BarChart2, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChartContainer } from '@/components/ui/chart';
 import { QrCodeScanner } from '@/components/dashboard/qr-code-scanner';
 import Link from 'next/link';
 
@@ -27,31 +26,33 @@ const teacherNavItems: NavItem[] = [
 export default function TeacherDashboardPage() {
     const searchParams = useSearchParams();
     const selectedClass = searchParams.get('class');
-    const role = searchParams.get('role') || 'Subject Teacher'; // Default to Subject Teacher if no role
+    const role = searchParams.get('role') || 'Subject Teacher';
 
     const filteredStudents = selectedClass ? students.filter(s => s.class === selectedClass) : students;
 
     const chartData = filteredStudents.map(s => ({ name: s.name, "Average Score": s.overallScore, "Attendance": s.attendance }));
+    const classAverageScore = Math.round(filteredStudents.reduce((acc, s) => acc + s.overallScore, 0) / (filteredStudents.length || 1));
+    const classAverageAttendance = Math.round(filteredStudents.reduce((acc, s) => acc + s.attendance, 0) / (filteredStudents.length || 1));
 
   return (
     <DashboardLayout navItems={teacherNavItems}>
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-3xl font-bold font-headline">{role.replace(/([A-Z])/g, ' $1')} Dashboard</h1>
+                <h1 className="text-3xl font-bold font-headline tracking-tight">{role.replace(/([A-Z])/g, ' $1')} Dashboard</h1>
                 <p className="text-muted-foreground">{selectedClass ? `Viewing Class ${selectedClass}` : 'Viewing All Students'}</p>
               </div>
               <QrCodeScanner />
             </div>
             
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3">
                 <StatCard icon={<Users />} title="Total Students" value={filteredStudents.length.toString()} />
-                <StatCard icon={<BarChart2 />} title="Class Average Score" value={`${Math.round(filteredStudents.reduce((acc, s) => acc + s.overallScore, 0) / filteredStudents.length)}%`} />
-                <StatCard icon={<BarChart2 />} title="Class Average Attendance" value={`${Math.round(filteredStudents.reduce((acc, s) => acc + s.attendance, 0) / filteredStudents.length)}%`} />
+                <StatCard icon={<BarChart2 />} title="Class Average Score" value={`${classAverageScore}%`} />
+                <StatCard icon={<Activity />} title="Class Average Attendance" value={`${classAverageAttendance}%`} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-              <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
+              <div className="xl:col-span-3">
                 <ProgressChart 
                     data={chartData} 
                     title={`Overall Performance${selectedClass ? `: Class ${selectedClass}` : ''}`}
@@ -61,11 +62,11 @@ export default function TeacherDashboardPage() {
                 />
               </div>
 
-              <div className="lg:col-span-2">
+              <div className="xl:col-span-2">
                 <Card>
                     <CardHeader>
                         <CardTitle className='font-headline'>Student Overview</CardTitle>
-                        <CardDescription>Detailed progress for each student.</CardDescription>
+                        <CardDescription>A quick look at student performance.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -77,22 +78,24 @@ export default function TeacherDashboardPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredStudents.map(student => {
+                                {filteredStudents.slice(0, 5).map(student => {
                                     const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
-                                    const scoreColor = student.overallScore > 80 ? 'text-green-500' : student.overallScore > 60 ? 'text-yellow-500' : 'text-red-500';
                                     return (
                                         <TableRow key={student.id}>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
-                                                    <Avatar className="w-8 h-8">
+                                                    <Avatar className="w-9 h-9">
                                                         <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
                                                         <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
                                                     </Avatar>
-                                                    <span className='font-medium'>{student.name}</span>
+                                                    <div className='flex flex-col'>
+                                                        <span className='font-medium'>{student.name}</span>
+                                                        <span className='text-xs text-muted-foreground'>{student.class}</span>
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <Badge variant="outline" className={`${scoreColor} border-current`}>{student.overallScore}%</Badge>
+                                                <Badge variant="outline">{student.overallScore}%</Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
                                             <DropdownMenu>
@@ -112,6 +115,13 @@ export default function TeacherDashboardPage() {
                                 })}
                             </TableBody>
                         </Table>
+                         {filteredStudents.length > 5 && (
+                            <div className='text-center mt-4'>
+                                <Button variant="ghost" asChild>
+                                    <Link href="/teacher/students">View All Students &rarr;</Link>
+                                </Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
               </div>

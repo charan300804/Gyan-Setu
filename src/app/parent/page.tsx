@@ -23,30 +23,30 @@ export default function ParentDashboardPage() {
   return (
     <DashboardLayout navItems={parentNavItems}>
         <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold font-headline">Parent Dashboard</h1>
-                <p className="text-muted-foreground">Welcome! Here's a summary of {child.name}'s progress.</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <StatCard icon={<Percent />} title="Overall Score" value={`${child.overallScore}%`} />
-                    <StatCard icon={<CheckCircle2 />} title="Attendance" value={`${child.attendance}%`} />
-                    <StatCard icon={<BookOpen />} title="Courses Completed" value={child.completedCourses.toString()} />
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold font-headline tracking-tight">Parent Dashboard</h1>
+                    <p className="text-muted-foreground">Welcome! Here's a summary of {child.name}'s progress.</p>
                 </div>
-                <Card className="lg:col-span-1 flex items-center p-6 gap-6">
-                    <Avatar className='w-16 h-16 border-2 border-primary'>
+                <Card className="flex items-center p-4 gap-4 shadow-sm">
+                    <Avatar className='w-12 h-12 border-2 border-primary'>
                         <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint}/>
                         <AvatarFallback>{child.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <h2 className="text-xl font-bold font-headline">{child.name}</h2>
-                        <p className="text-muted-foreground">Class: {child.class}</p>
+                        <h2 className="text-lg font-bold font-headline">{child.name}</h2>
+                        <p className="text-muted-foreground text-sm">Class: {child.class}</p>
                     </div>
                 </Card>
+            </header>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <StatCard icon={<Percent className="w-5 h-5"/>} title="Overall Score" value={`${child.overallScore}%`} />
+                <StatCard icon={<CheckCircle2 className="w-5 h-5"/>} title="Attendance" value={`${child.attendance}%`} />
+                <StatCard icon={<BookOpen className="w-5 h-5"/>} title="Courses Completed" value={child.completedCourses.toString()} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <ProgressChart 
                     data={chartData} 
                     title="Course Performance"
@@ -56,7 +56,7 @@ export default function ParentDashboardPage() {
                 />
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline">Current Course Progress</CardTitle>
+                        <CardTitle className="font-headline tracking-tight">Current Course Progress</CardTitle>
                         <CardDescription>An overview of courses your child is currently working on.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
@@ -66,9 +66,12 @@ export default function ParentDashboardPage() {
                                     <h3 className="font-semibold">{course.title}</h3>
                                     <Badge variant={course.progress === 100 ? 'default' : 'secondary'}>{course.progress}%</Badge>
                                 </div>
-                                <Progress value={course.progress} />
+                                <Progress value={course.progress} className="h-2"/>
                             </div>
                         ))}
+                         {courses.filter(c => c.progress > 0 && c.progress < 100).length === 0 && (
+                            <p className="text-muted-foreground text-center py-4">No courses are currently in progress.</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>
@@ -85,7 +88,7 @@ function StatCard({ icon, title, value }: { icon: React.ReactNode; title: string
                 <div className="text-muted-foreground">{icon}</div>
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{value}</div>
+                <div className="text-3xl font-bold">{value}</div>
             </CardContent>
         </Card>
     );

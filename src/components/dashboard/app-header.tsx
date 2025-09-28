@@ -9,25 +9,24 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 
 const Logo = () => (
-    <div className="flex items-center gap-2">
-      <SidebarTrigger className="h-8 w-8" />
-      <div className="text-2xl font-bold font-headline text-primary tracking-tighter hidden md:block group-data-[state=collapsed]:hidden">
-        <Link href="/">
-          Gyan<span className="text-accent">Setu</span>
-        </Link>
-      </div>
-    </div>
+    <Link href="/" className="text-2xl font-bold font-headline text-primary tracking-tighter hidden md:block group-data-[state=collapsed]:hidden">
+      Gyan<span className="text-accent">Setu</span>
+    </Link>
   );
 
 export function AppHeader() {
   const userAvatar = PlaceHolderImages.find(img => img.id === 'avatar-male-1');
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6 justify-between">
-        <Logo />
       <div className="flex items-center gap-4">
+        <SidebarTrigger className="md:hidden" />
+        <Logo />
+      </div>
+
+      <div className="flex items-center gap-2 md:gap-4">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="ghost" size="icon" className='w-8 h-8'>
                     <Languages className="h-[1.2rem] w-[1.2rem]" />
                     <span className="sr-only">Switch Language</span>
                 </Button>
@@ -42,7 +41,7 @@ export function AppHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10 border">
                 <AvatarImage src={userAvatar?.imageUrl} alt="User Avatar" data-ai-hint={userAvatar?.imageHint} />
                 <AvatarFallback>RS</AvatarFallback>
               </Avatar>
@@ -67,9 +66,11 @@ export function AppHeader() {
               <span>Settings</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-                <LogOut className="mr-2 h-4 w-4" />
-                <Link href="/">Log out</Link>
+            <DropdownMenuItem asChild>
+                <Link href="/">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
