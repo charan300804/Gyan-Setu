@@ -26,7 +26,7 @@ import { UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
@@ -35,20 +35,28 @@ const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   confirmPassword: z.string(),
-  class: z.string().min(1, { message: 'Please select a class.' }),
+  class: z.string().optional(),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
+}).refine(data => (formSchema.isStudent ? data.class && data.class.length > 0 : true), {
+    message: 'Please select a class.',
+    path: ['class'],
 });
 
+// Hack to pass role context to schema refinement
+formSchema.isStudent = false;
+
 type RegisterFormProps = {
-  role: string;
+  role: 'Student' | 'Principal';
   redirectUrl: string;
 };
 
 export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  formSchema.isStudent = role === 'Student';
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -65,6 +73,14 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      if (role === 'Principal') {
+        const principalQuery = query(collection(db, 'users'), where('role', '==', 'Principal'), limit(1));
+        const principalSnapshot = await getDocs(principalQuery);
+        if (!principalSnapshot.empty) {
+          throw new Error('A Principal account already exists. Only one Principal can be registered.');
+        }
+      }
+
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
@@ -72,19 +88,26 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
         displayName: values.fullName,
       });
 
-      // Create a document in Firestore for the student
-      await setDoc(doc(db, "users", user.uid), {
+      // Create a document in Firestore
+      const userDocPayload: any = {
         uid: user.uid,
         name: values.fullName,
         email: values.email,
-        role: "Student",
-        class: values.class,
-        // Add other student-related fields with default values
-        overallScore: 0,
-        attendance: 100,
-        completedCourses: 0,
-        avatarId: 'avatar-male-1', // default avatar
-      });
+        role: role,
+        avatarId: role === 'Principal' ? 'avatar-teacher' : 'avatar-male-1', // default avatar
+      };
+
+      if (role === 'Student') {
+        userDocPayload.class = values.class;
+        userDocPayload.overallScore = 0;
+        userDocPayload.attendance = 100;
+        userDocPayload.completedCourses = 0;
+      }
+      if (role === 'Principal') {
+        userDocPayload.assignment = 'School Administration';
+      }
+
+      await setDoc(doc(db, "users", user.uid), userDocPayload);
 
       toast({
         title: "Registration Successful",
@@ -102,6 +125,12 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
         description: error.message || "An unexpected error occurred.",
       });
     }
+  }
+
+  const getLoginLink = () => {
+    if (role === 'Student') return '/student/login';
+    if (role === 'Principal') return '/teacher/principal/login';
+    return '/';
   }
 
   return (
@@ -148,7 +177,8 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
                   </FormItem>
                 )}
               />
-              <FormField
+              {role === 'Student' && (
+                <FormField
                   control={form.control}
                   name="class"
                   render={({ field }) => (
@@ -168,6 +198,7 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
                     </FormItem>
                   )}
                 />
+              )}
               <FormField
                 control={form.control}
                 name="password"
@@ -200,7 +231,7 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
                 <UserPlus className="mr-2" /> Create Account
               </Button>
               <Button variant="link" size="sm" asChild className="w-full">
-                <Link href="/student/login">Already have an account? Login</Link>
+                <Link href={getLoginLink()}>Already have an account? Login</Link>
               </Button>
               <Button variant="link" size="sm" asChild className="w-full">
                 <Link href="/">&larr; Back to Home</Link>

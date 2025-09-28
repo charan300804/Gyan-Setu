@@ -140,6 +140,18 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
     return 'you@example.com or staff ID';
   }
 
+  const getRegistrationLink = () => {
+    if (role === 'Student') return '/student/register';
+    if (role === 'Principal') return '/teacher/principal/register';
+    return '';
+  }
+
+  const getRegistrationText = () => {
+    if (role === 'Student') return 'Create Student Account';
+    if (role === 'Principal') return 'Create Principal Account';
+    return '';
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm shadow-2xl">
@@ -208,7 +220,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
               <Button type="submit" className="w-full">
                 <LogIn className="mr-2" /> Login
               </Button>
-              {role === 'Student' && showRegistration && (
+              {showRegistration && (role === 'Student' || role === 'Principal') && (
                 <>
                   <div className="flex items-center w-full my-2">
                     <Separator className="flex-1" />
@@ -216,9 +228,9 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                     <Separator className="flex-1" />
                   </div>
                   <Button variant="outline" asChild className="w-full">
-                    <Link href="/student/register">
+                    <Link href={getRegistrationLink()}>
                       <UserPlus className="mr-2" />
-                      Create Student Account
+                      {getRegistrationText()}
                     </Link>
                   </Button>
                 </>
