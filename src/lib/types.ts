@@ -19,6 +19,7 @@ export type Course = {
   modules: number;
   imageId: string;
   progress: number;
+  class: string;
 };
 
 export type Student = {
@@ -31,7 +32,7 @@ export type Student = {
   completedCourses: number;
 };
 
-export type TeacherRole = 'Class Teacher' | 'Subject Teacher';
+export type TeacherRole = 'Class Teacher' | 'Subject Teacher' | 'Principal';
 
 export type Teacher = {
     id: string;

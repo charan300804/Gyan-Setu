@@ -1,11 +1,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { NavItem, Teacher } from '@/lib/types';
-import { teachers, students } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,6 +19,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { TeacherRole } from '@/lib/types';
+import { collection, getDocs, addDoc, query, where } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { db, auth as appAuth } from '@/lib/firebase';
 
 const baseNavItems: NavItem[] = [
     { title: 'Home', href: '/', icon: 'Home' },
@@ -67,23 +69,67 @@ function TeacherManagementContent() {
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<TeacherRole | ''>('');
+    const [teachers, setTeachers] = useState<Teacher[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const availableClasses = Array.from(new Set(students.map(s => s.class)));
-    const availableSubjects = ['Mathematics', 'Science', 'English', 'History'];
+    const availableClasses = ["6th A", "6th B", "7th A", "7th B", "8th A", "8th B"];
+    const availableSubjects = ['Mathematics', 'Science', 'English', 'History', 'Punjabi', 'Computer Science'];
 
-    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    async function fetchTeachers() {
+        setLoading(true);
+        const teachersRef = collection(db, 'users');
+        const q = query(teachersRef, where("role", "!=", "Student"));
+        const querySnapshot = await getDocs(q);
+        const teacherList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher));
+        setTeachers(teacherList);
+        setLoading(false);
+    }
+
+    useEffect(() => {
+        fetchTeachers();
+    }, []);
+
+    const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const name = formData.get('name') as string;
+        const email = `${name.toLowerCase().replace(/\s/g, '.')}@gyansetu.com`;
         const newPassword = Math.random().toString(36).slice(-8);
+        const role = formData.get('role') as TeacherRole;
+        const assignment = formData.get('assignment') as string;
 
-        toast({
-            title: `Account Created for ${name}`,
-            description: `An email has been sent with their credentials. Password: ${newPassword}`,
-        });
-        setOpen(false);
-        setSelectedRole('');
-        e.currentTarget.reset();
+        try {
+            // Note: Creating auth users requires elevated privileges, which might not work client-side in production.
+            // This is a simplified example. A real app would use a backend function to create users.
+            const userCredential = await createUserWithEmailAndPassword(appAuth, email, newPassword);
+            const user = userCredential.user;
+
+            await addDoc(collection(db, "users"), {
+              uid: user.uid,
+              name: name,
+              email: email,
+              role: role,
+              assignment: assignment,
+              avatarId: role === 'Principal' ? 'avatar-teacher' : 'avatar-teacher-male',
+            });
+
+            toast({
+                title: `Account Created for ${name}`,
+                description: `Email: ${email} | Password: ${newPassword}. An email has been sent with their credentials.`,
+            });
+
+            setOpen(false);
+            setSelectedRole('');
+            e.currentTarget.reset();
+            fetchTeachers(); // Refresh the list
+        } catch (error: any) {
+            console.error("Error creating teacher:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Error Creating Account',
+                description: error.message,
+            });
+        }
     }
     
     return (
@@ -104,7 +150,7 @@ function TeacherManagementContent() {
                             <DialogHeader>
                                 <DialogTitle>Create Teacher Account</DialogTitle>
                                 <DialogDescription>
-                                    Fill out the form to generate login credentials for a new teacher.
+                                    Fill out the form to generate login credentials for a new teacher. Email will be auto-generated.
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleFormSubmit} className="space-y-4">
@@ -121,10 +167,11 @@ function TeacherManagementContent() {
                                         <SelectContent>
                                             <SelectItem value="Class Teacher">Class Teacher</SelectItem>
                                             <SelectItem value="Subject Teacher">Subject Teacher</SelectItem>
+                                            <SelectItem value="Principal">Principal</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                {selectedRole && (
+                                {selectedRole && selectedRole !== 'Principal' && (
                                     <div className="space-y-2">
                                         <Label htmlFor="assignment">Assignment</Label>
                                         <Select name="assignment" required>
@@ -146,50 +193,52 @@ function TeacherManagementContent() {
                     </Dialog>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Teacher</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Assignment</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {teachers.map(teacher => {
-                                const avatar = PlaceHolderImages.find(img => img.id === teacher.avatarId);
-                                return (
-                                    <TableRow key={teacher.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-4">
-                                                <Avatar>
-                                                    <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
-                                                    <AvatarFallback>{teacher.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <span className='font-medium'>{teacher.name}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="secondary">{teacher.role}</Badge>
-                                        </TableCell>
-                                        <TableCell>{teacher.assignment}</TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon"><MoreHorizontal className='h-4 w-4'/></Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuItem>Edit Details</DropdownMenuItem>
-                                                    <DropdownMenuItem>Reset Password</DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-destructive">Delete Account</DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
+                    {loading ? <p>Loading teachers...</p> : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Teacher</TableHead>
+                                    <TableHead>Role</TableHead>
+                                    <TableHead>Assignment</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {teachers.map(teacher => {
+                                    const avatar = PlaceHolderImages.find(img => img.id === teacher.avatarId);
+                                    return (
+                                        <TableRow key={teacher.id}>
+                                            <TableCell>
+                                                <div className="flex items-center gap-4">
+                                                    <Avatar>
+                                                        <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
+                                                        <AvatarFallback>{teacher.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className='font-medium'>{teacher.name}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary">{teacher.role}</Badge>
+                                            </TableCell>
+                                            <TableCell>{teacher.assignment || 'N/A'}</TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon"><MoreHorizontal className='h-4 w-4'/></Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuItem>Edit Details</DropdownMenuItem>
+                                                        <DropdownMenuItem>Reset Password</DropdownMenuItem>
+                                                        <DropdownMenuItem className="text-destructive">Delete Account</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
             </Card>
         </div>

@@ -26,7 +26,6 @@ import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from '../ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { students } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -56,7 +55,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
     },
   });
 
-  const availableClasses = Array.from(new Set(students.map(s => s.class)));
+  const availableClasses = ["6th A", "6th B", "7th A", "7th B", "8th A", "8th B"];
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     
@@ -72,17 +71,12 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
     }
     
     try {
-        if (role === 'Student' || role === 'Parent') {
-             if (role === 'Student' && !values.class) {
-                form.setError('class', { type: 'manual', message: 'Please select your class.'});
-                return;
-            }
-            await signInWithEmailAndPassword(auth, values.email, values.password);
-        } else {
-            // For teacher roles, we still use mock login for now.
-            // In a real app, you'd have a separate teacher auth flow.
-             await signInWithEmailAndPassword(auth, values.email, values.password);
+        if (role === 'Student' && !values.class) {
+            form.setError('class', { type: 'manual', message: 'Please select your class.'});
+            return;
         }
+
+        await signInWithEmailAndPassword(auth, values.email, values.password);
 
         if (queryParams.toString()) {
             finalRedirectUrl = `${redirectUrl}?${queryParams.toString()}`;
@@ -144,7 +138,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                   </FormItem>
                 )}
               />
-              {(role === 'Class Teacher' || role === 'Subject Teacher' || role === 'Student') && (
+              {(role === 'Student') && (
                 <FormField
                   control={form.control}
                   name="class"
@@ -199,9 +193,16 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                   </Button>
                 </>
               )}
-              <Button variant="link" size="sm" asChild className="w-full mt-4">
-                <Link href={backLink}>&larr; Back</Link>
-              </Button>
+               {role !== 'Student' && role !== 'Parent' && (
+                 <Button variant="link" size="sm" asChild className="w-full mt-4">
+                    <Link href={'/teacher'}>&larr; Back to Role Selection</Link>
+                </Button>
+               )}
+               {(role === 'Student' || role === 'Parent') && (
+                <Button variant="link" size="sm" asChild className="w-full mt-4">
+                    <Link href={'/'}>&larr; Back to Home</Link>
+                </Button>
+               )}
             </CardFooter>
           </form>
         </Form>

@@ -1,8 +1,7 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
-import type { NavItem } from '@/lib/types';
-import { courses } from '@/lib/data';
+import type { NavItem, Course } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -11,6 +10,9 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { ArrowLeft, BookOpen, Clock, FileText, Trophy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useEffect, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const studentNavItems: NavItem[] = [
     { title: 'Home', href: '/', icon: 'Home' },
@@ -20,7 +22,33 @@ const studentNavItems: NavItem[] = [
 ];
 
 export default function CourseDetailPage({ params: { courseId } }: { params: { courseId: string } }) {
-    const course = courses.find(c => c.id === courseId);
+    const [course, setCourse] = useState<Course | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchCourse() {
+            setLoading(true);
+            const docRef = doc(db, 'courses', courseId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                setCourse({ id: docSnap.id, ...docSnap.data() } as Course);
+            }
+            setLoading(false);
+        }
+        if (courseId) {
+            fetchCourse();
+        }
+    }, [courseId]);
+
+    if (loading) {
+        return (
+            <DashboardLayout navItems={studentNavItems}>
+                <div className="flex flex-col items-center justify-center h-full">
+                    <p className="text-2xl font-bold">Loading course...</p>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     if (!course) {
         return (

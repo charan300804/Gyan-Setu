@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { NavItem } from '@/lib/types';
-import { students } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,6 +14,9 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Student } from '@/lib/types';
 
 const teacherNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -28,6 +30,21 @@ export default function TeacherStudentsPage() {
     const searchParams = useSearchParams();
     const selectedClass = searchParams.get('class');
     const [searchTerm, setSearchTerm] = useState('');
+    const [students, setStudents] = useState<Student[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchStudents() {
+            setLoading(true);
+            const studentsRef = collection(db, 'users');
+            const q = query(studentsRef, where("role", "==", "Student"));
+            const querySnapshot = await getDocs(q);
+            const studentList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
+            setStudents(studentList);
+            setLoading(false);
+        }
+        fetchStudents();
+    }, []);
 
     const filteredStudents = students
         .filter(s => selectedClass ? s.class === selectedClass : true)
@@ -55,69 +72,71 @@ export default function TeacherStudentsPage() {
                 </div>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Student</TableHead>
-                            <TableHead className="text-center hidden sm:table-cell">Courses Completed</TableHead>
-                            <TableHead className="text-center">Overall Score</TableHead>
-                            <TableHead className="text-center hidden md:table-cell">Attendance</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredStudents.length > 0 ? filteredStudents.map(student => {
-                            const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
-                            return (
-                                <TableRow key={student.id}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-4">
-                                            <Avatar>
-                                                <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
-                                                <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                                            </Avatar>
-                                            <div className='flex flex-col'>
-                                                <span className='font-medium'>{student.name}</span>
-                                                <span className='text-xs text-muted-foreground'>{student.class}</span>
+                {loading ? <p>Loading students...</p> : (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Student</TableHead>
+                                <TableHead className="text-center hidden sm:table-cell">Courses Completed</TableHead>
+                                <TableHead className="text-center">Overall Score</TableHead>
+                                <TableHead className="text-center hidden md:table-cell">Attendance</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredStudents.length > 0 ? filteredStudents.map(student => {
+                                const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
+                                return (
+                                    <TableRow key={student.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-4">
+                                                <Avatar>
+                                                    <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
+                                                    <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                <div className='flex flex-col'>
+                                                    <span className='font-medium'>{student.name}</span>
+                                                    <span className='text-xs text-muted-foreground'>{student.class}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </TableCell>
+                                        </TableCell>
 
-                                    <TableCell className="text-center hidden sm:table-cell">
-                                        <Badge variant="secondary">{student.completedCourses}</Badge>
-                                    </TableCell>
+                                        <TableCell className="text-center hidden sm:table-cell">
+                                            <Badge variant="secondary">{student.completedCourses}</Badge>
+                                        </TableCell>
 
-                                    <TableCell className="text-center">
-                                        <Badge variant={student.overallScore > 80 ? 'default' : student.overallScore > 60 ? 'secondary' : 'destructive'} >{student.overallScore}%</Badge>
-                                    </TableCell>
-                                    
-                                    <TableCell className="text-center hidden md:table-cell">{student.attendance}%</TableCell>
-                                    <TableCell className="text-right">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon"><MoreHorizontal className='h-4 w-4'/></Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
+                                        <TableCell className="text-center">
+                                            <Badge variant={student.overallScore > 80 ? 'default' : student.overallScore > 60 ? 'secondary' : 'destructive'} >{student.overallScore}%</Badge>
+                                        </TableCell>
+                                        
+                                        <TableCell className="text-center hidden md:table-cell">{student.attendance}%</TableCell>
+                                        <TableCell className="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon"><MoreHorizontal className='h-4 w-4'/></Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                    <DropdownMenuItem asChild>
+                                                    <Link href={`/teacher/students/${student.id}`}>View Report</Link>
+                                                </DropdownMenuItem>
                                                 <DropdownMenuItem asChild>
-                                                <Link href={`/teacher/students/${student.id}`}>View Report</Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href={`/teacher/chat?contactId=contact-2`}>Send Message</Link>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                                    <Link href={`/teacher/chat?contactId=contact-2`}>Send Message</Link>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            }) : (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                        No students found for your search.
                                     </TableCell>
                                 </TableRow>
-                            )
-                        }) : (
-                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                    No students found for your search.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            )}
+                        </TableBody>
+                    </Table>
+                )}
             </CardContent>
         </Card>
       </div>

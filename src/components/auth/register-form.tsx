@@ -61,7 +61,7 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
     },
   });
 
-  const availableClasses = Array.from(new Set(students.map(s => s.class)));
+  const availableClasses = ["6th A", "6th B", "7th A", "7th B", "8th A", "8th B"];
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {

@@ -9,9 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { students } from '@/lib/data';
 import { UploadCloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from 'react';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Student } from '@/lib/types';
 
 const teacherNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -22,8 +25,20 @@ const teacherNavItems: NavItem[] = [
 ];
 
 export default function TeacherAssignmentsPage() {
-  const availableClasses = Array.from(new Set(students.map(s => s.class)));
+  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchClasses() {
+        const studentsRef = collection(db, 'users');
+        const q = query(studentsRef, where("role", "==", "Student"));
+        const querySnapshot = await getDocs(q);
+        const studentList = querySnapshot.docs.map(doc => doc.data() as Student);
+        const classes = Array.from(new Set(studentList.map(s => s.class)));
+        setAvailableClasses(classes);
+    }
+    fetchClasses();
+  }, []);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -92,4 +107,3 @@ export default function TeacherAssignmentsPage() {
     </DashboardLayout>
   );
 }
-

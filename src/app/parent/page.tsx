@@ -1,13 +1,17 @@
+'use client';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
-import type { NavItem } from '@/lib/types';
+import type { NavItem, Student, Course } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { students, courses } from '@/lib/data';
 import { ProgressChart } from '@/components/dashboard/progress-chart';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, BookOpen, Percent } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useEffect, useState } from 'react';
+import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 const parentNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -18,9 +22,60 @@ const parentNavItems: NavItem[] = [
 ];
 
 export default function ParentDashboardPage() {
-    const child = students[0]; // Assuming the parent is viewing the first student
+    const [user, setUser] = useState<User | null>(null);
+    const [child, setChild] = useState<Student | null>(null);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        async function fetchData() {
+            if (!user) return;
+
+            setLoading(true);
+            // In a real app, you would have a link between parent and child.
+            // For now, we assume the logged-in user is the child for data fetching.
+            const studentDocRef = doc(db, 'users', user.uid);
+            const studentDocSnap = await getDoc(studentDocRef);
+            if (studentDocSnap.exists()) {
+                setChild({ id: studentDocSnap.id, ...studentDocSnap.data() } as Student);
+            }
+
+            const coursesCollection = collection(db, 'courses');
+            const courseSnapshot = await getDocs(coursesCollection);
+            const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
+            setCourses(courseList);
+            
+            setLoading(false);
+        }
+        fetchData();
+    }, [user]);
+
+    if (loading) {
+        return (
+            <DashboardLayout navItems={parentNavItems}>
+                <div className="flex justify-center items-center h-full">Loading...</div>
+            </DashboardLayout>
+        );
+    }
+    
+    if (!child) {
+        return (
+            <DashboardLayout navItems={parentNavItems}>
+                <div className="flex justify-center items-center h-full">Could not find child data.</div>
+            </DashboardLayout>
+        );
+    }
+
     const avatar = PlaceHolderImages.find(img => img.id === child.avatarId);
     const chartData = courses.filter(c => c.progress > 0).map(c => ({ name: c.title, "Score": c.progress }));
+
   return (
     <DashboardLayout navItems={parentNavItems}>
       <div className="flex flex-col gap-4">

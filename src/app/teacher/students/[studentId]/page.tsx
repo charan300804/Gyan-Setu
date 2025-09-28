@@ -1,8 +1,7 @@
 'use client';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
-import type { NavItem } from '@/lib/types';
+import type { Course, NavItem, Student } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { students, courses } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { StudentSummary } from '@/components/dashboard/student-summary';
@@ -11,6 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, BookOpen, CheckCircle2, Percent, MessageSquare } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const teacherNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -21,8 +23,42 @@ const teacherNavItems: NavItem[] = [
 ];
 
 export default function StudentProfilePage({ params: { studentId } }: { params: { studentId: string } }) {
-    const student = students.find(s => s.id === studentId);
+    const [student, setStudent] = useState<Student | null>(null);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [loading, setLoading] = useState(true);
 
+    useEffect(() => {
+      async function fetchData() {
+        setLoading(true);
+        // Fetch student
+        const studentDocRef = doc(db, 'users', studentId);
+        const studentDocSnap = await getDoc(studentDocRef);
+
+        if (studentDocSnap.exists()) {
+          setStudent({ id: studentDocSnap.id, ...studentDocSnap.data() } as Student);
+        }
+
+        // Fetch courses
+        const coursesCollection = collection(db, 'courses');
+        const courseSnapshot = await getDocs(coursesCollection);
+        const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
+        setCourses(courseList);
+        
+        setLoading(false);
+      }
+      fetchData();
+    }, [studentId]);
+
+    if (loading) {
+        return (
+            <DashboardLayout navItems={teacherNavItems}>
+                <div className="flex flex-col items-center justify-center h-full">
+                    <p className="text-2xl font-bold">Loading Student Data...</p>
+                </div>
+            </DashboardLayout>
+        );
+    }
+    
     if (!student) {
         return (
             <DashboardLayout navItems={teacherNavItems}>

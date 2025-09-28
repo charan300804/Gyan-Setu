@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { auth, db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import type { Course } from '@/lib/types';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
@@ -52,7 +52,7 @@ export default function StudentDashboardPage() {
     fetchCourses();
   }, [user]);
   
-  const relevantCourses = courses; // Filtering logic can be added here based on studentClass
+  const relevantCourses = studentClass ? courses.filter(c => c.class === studentClass) : courses; 
 
   const inProgressCourses = relevantCourses.filter(c => c.progress > 0 && c.progress < 100);
   const newCourses = relevantCourses.filter(c => c.progress === 0).slice(0, 2);
