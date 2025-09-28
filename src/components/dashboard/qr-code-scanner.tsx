@@ -22,7 +22,7 @@ export function QrCodeScanner() {
   const { toast } = useToast();
 
   const handleScan = (data: any) => {
-    if (data) {
+    if (data && data.text) {
         try {
             const parsedData = JSON.parse(data.text);
             setScannedData(parsedData);
