@@ -81,6 +81,11 @@ export default function TeacherDashboardPage() {
         router.replace(`${pathname}?${params.toString()}`);
     };
 
+    const createUrlWithParams = (path: string) => {
+        const params = new URLSearchParams(searchParams);
+        return `${path}?${params.toString()}`;
+    }
+
   return (
     <DashboardLayout navItems={teacherNavItems}>
         <div className="flex flex-col gap-8">
@@ -94,7 +99,7 @@ export default function TeacherDashboardPage() {
             <div className="flex items-center gap-4 w-full sm:w-auto">
                 <QrCodeScanner />
                  <Button asChild>
-                  <Link href="/teacher/students">View All Students</Link>
+                  <Link href={createUrlWithParams("/teacher/students")}>View All Students</Link>
                 </Button>
             </div>
             </header>
@@ -169,7 +174,7 @@ export default function TeacherDashboardPage() {
                              {students.length > 10 && (
                                 <div className='text-center mt-4'>
                                     <Button variant="ghost" asChild>
-                                        <Link href={`/teacher/students`}>View All Students &rarr;</Link>
+                                        <Link href={createUrlWithParams(`/teacher/students`)}>View All Students &rarr;</Link>
                                     </Button>
                                 </div>
                             )}
@@ -208,6 +213,12 @@ function StatCard({ icon, title, value }: { icon: React.ReactNode; title: string
 }
 
 function StudentTable({ students }: { students: Student[] }) {
+    const searchParams = useSearchParams();
+    const createUrlWithParams = (path: string) => {
+        const params = new URLSearchParams(searchParams);
+        return `${path}?${params.toString()}`;
+    }
+
     return (
         <Table>
             <TableHeader>
@@ -244,10 +255,10 @@ function StudentTable({ students }: { students: Student[] }) {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuItem asChild>
-                                        <Link href={`/teacher/students/${student.id}`}>View Full Report</Link>
+                                        <Link href={createUrlWithParams(`/teacher/students/${student.id}`)}>View Full Report</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                      <Link href={`/teacher/chat?contactId=contact-2`}>Send Message</Link>
+                                      <Link href={createUrlWithParams(`/teacher/chat?contactId=contact-2`)}>Send Message</Link>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>

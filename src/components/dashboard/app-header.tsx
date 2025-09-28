@@ -7,6 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {Languages, User, LogOut, Settings} from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
 
 const Logo = () => (
     <Link href="/" className="text-2xl font-bold font-headline text-primary tracking-tighter hidden md:block group-data-[state=collapsed]:hidden">
@@ -15,7 +22,38 @@ const Logo = () => (
   );
 
 export function AppHeader() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+        await signOut(auth);
+        router.push('/');
+        toast({
+            title: "Logged Out",
+            description: "You have been successfully logged out.",
+        });
+    } catch (error) {
+        console.error("Logout error:", error);
+        toast({
+            variant: "destructive",
+            title: "Logout Failed",
+            description: "An error occurred while logging out.",
+        });
+    }
+  };
+
   const userAvatar = PlaceHolderImages.find(img => img.id === 'avatar-male-1');
+  const fallback = user ? user.displayName?.charAt(0) || 'U' : 'U';
+
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <div className="flex items-center gap-4">
@@ -42,37 +80,46 @@ export function AppHeader() {
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10 border">
                 <AvatarImage src={userAvatar?.imageUrl} alt="User Avatar" data-ai-hint={userAvatar?.imageHint} />
-                <AvatarFallback>RS</AvatarFallback>
+                <AvatarFallback>{fallback}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Rohan Singh</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  rohan.singh@example.com
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/profile">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link href="/">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                </Link>
-            </DropdownMenuItem>
+            {user ? (
+                <>
+                    <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                        </p>
+                    </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                    </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                    </DropdownMenuItem>
+                </>
+            ) : (
+                <DropdownMenuItem asChild>
+                     <Link href="/">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log in</span>
+                    </Link>
+                </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

@@ -39,11 +39,11 @@ export default function ParentDashboardPage() {
             if (!user) return;
 
             setLoading(true);
-            // In a real app, you would have a link between parent and child.
-            // For now, we assume the logged-in user is the child for data fetching.
+            // The logged-in user is the student (child) for data fetching purposes
+            // as parents log in with their child's credentials.
             const studentDocRef = doc(db, 'users', user.uid);
             const studentDocSnap = await getDoc(studentDocRef);
-            if (studentDocSnap.exists()) {
+            if (studentDocSnap.exists() && studentDocSnap.data().role === 'Student') {
                 setChild({ id: studentDocSnap.id, ...studentDocSnap.data() } as Student);
             }
 
@@ -68,7 +68,7 @@ export default function ParentDashboardPage() {
     if (!child) {
         return (
             <DashboardLayout navItems={parentNavItems}>
-                <div className="flex justify-center items-center h-full">Could not find child data.</div>
+                <div className="flex justify-center items-center h-full">Could not find child data. Ensure you logged in with valid student credentials.</div>
             </DashboardLayout>
         );
     }

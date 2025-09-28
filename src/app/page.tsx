@@ -40,7 +40,7 @@ export default function Home() {
             icon={<Users className="h-10 w-10 text-primary" />}
             title="Parents/Guardian"
             description="Login with your child's credentials to view their performance reports and progress."
-            href="/student/login"
+            href="/parent/login"
             actionText="Login with Student ID"
           />
         </div>
