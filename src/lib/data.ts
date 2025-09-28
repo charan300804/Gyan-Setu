@@ -1,4 +1,4 @@
-import type { Course, Student, Quiz } from './types';
+import type { Course, Student, Quiz, ChatContact, Conversation } from './types';
 
 export const courses: Course[] = [
   {
@@ -96,3 +96,57 @@ export const sampleQuiz: Quiz = {
     }
   ],
 };
+
+export const chatContacts: ChatContact[] = [
+    {
+        id: 'contact-1',
+        name: 'Mr. Sharma (Principal)',
+        role: 'Principal',
+        avatarId: 'avatar-teacher',
+        lastMessage: "Yes, I'll look into it right away.",
+        lastMessageTime: '10:42 AM',
+        unreadCount: 0,
+    },
+    {
+        id: 'contact-2',
+        name: 'Mrs. Gill (Parent)',
+        role: 'Parent of Simranjeet Gill',
+        avatarId: 'avatar-parent',
+        lastMessage: "Thank you for letting me know!",
+        lastMessageTime: 'Yesterday',
+        unreadCount: 2,
+    },
+    {
+        id: 'contact-3',
+        name: 'Amit Sharma',
+        role: 'Class Teacher, 6th B',
+        avatarId: 'avatar-male-1',
+        lastMessage: "Did you get the new schedule?",
+        lastMessageTime: '3 days ago',
+        unreadCount: 0,
+    },
+];
+
+export const conversations: Conversation[] = [
+    {
+        contactId: 'contact-1',
+        messages: [
+            { id: 'msg-1-1', sender: 'me', text: 'Good morning, Mr. Sharma. I wanted to follow up on the budget for the new computer lab.', timestamp: '10:40 AM' },
+            { id: 'msg-1-2', sender: 'other', text: "Yes, I'll look into it right away.", timestamp: '10:42 AM' },
+        ]
+    },
+    {
+        contactId: 'contact-2',
+        messages: [
+            { id: 'msg-2-1', sender: 'me', text: "Hello Mrs. Gill, I'm writing to inform you about Simranjeet's excellent performance in the recent science quiz.", timestamp: 'Yesterday' },
+            { id: 'msg-2-2', sender: 'other', text: "That's wonderful news! I'm so proud.", timestamp: 'Yesterday' },
+            { id: 'msg-2-3', sender: 'other', text: "Thank you for letting me know!", timestamp: 'Yesterday' },
+        ]
+    },
+    {
+        contactId: 'contact-3',
+        messages: [
+             { id: 'msg-3-1', sender: 'other', text: "Did you get the new schedule?", timestamp: '3 days ago' },
+        ]
+    }
+];

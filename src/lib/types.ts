@@ -42,3 +42,25 @@ export type Quiz = {
   courseId: string;
   questions: QuizQuestion[];
 };
+
+export type ChatContact = {
+  id: string;
+  name: string;
+  role: string;
+  avatarId: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+};
+
+export type ChatMessage = {
+  id: string;
+  sender: 'me' | 'other';
+  text: string;
+  timestamp: string;
+};
+
+export type Conversation = {
+  contactId: string;
+  messages: ChatMessage[];
+};
