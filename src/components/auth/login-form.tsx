@@ -91,7 +91,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
         const userData = userDocSnap.data();
         const userRole = userData.role;
 
-        const isStudentLogin = redirectUrl.includes('student');
+        const isStudentLogin = role === 'Student';
         const isParentLogin = redirectUrl.includes('parent');
         const isTeacherLogin = redirectUrl.includes('teacher');
         
@@ -107,7 +107,6 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
         if (isTeacherLogin && userRole !== role) {
              throw new Error(`Account role mismatch. Please use the '${userRole}' login page.`);
         }
-
 
         if (queryParams.toString()) {
             finalRedirectUrl = `${redirectUrl}?${queryParams.toString()}`;
@@ -169,7 +168,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                   </FormItem>
                 )}
               />
-              {(role === 'Student' && redirectUrl.includes('/student')) && (
+              {(role === 'Student') && (
                 <FormField
                   control={form.control}
                   name="class"
@@ -229,7 +228,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                     <Link href={'/teacher'}>&larr; Back to Role Selection</Link>
                 </Button>
                )}
-               {!isTeacherLogin && (
+               {role === 'Student' && (
                 <Button variant="link" size="sm" asChild className="w-full mt-4">
                     <Link href={'/'}>&larr; Back to Home</Link>
                 </Button>

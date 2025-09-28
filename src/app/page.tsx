@@ -24,7 +24,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <RoleCard 
             icon={<GraduationCap className="h-10 w-10 text-primary" />}
-            title="Students"
+            title="Student"
             description="Access your lessons, take quizzes, and track your learning journey."
             href="/student/login"
             actionText="Login to Dashboard"
@@ -38,7 +38,7 @@ export default function Home() {
           />
           <RoleCard 
             icon={<Users className="h-10 w-10 text-primary" />}
-            title="Parents/Guardian"
+            title="Parent/Guardian"
             description="Login with your child's credentials to view their performance reports and progress."
             href="/student/login"
             actionText="Login with Student ID"
