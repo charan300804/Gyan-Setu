@@ -54,7 +54,7 @@ export default function CoursesPage() {
                                     .filter(course => lang === 'All' || course.language === lang)
                                     .map(course => (
                                         <CourseCard key={course.id} course={course} />
-                                ))}
+                                    ))}
                             </div>
                         </TabsContent>
                     ))}
