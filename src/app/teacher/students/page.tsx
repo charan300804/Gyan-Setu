@@ -4,17 +4,14 @@ import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { NavItem } from '@/lib/types';
 import { students } from '@/lib/data';
-import { ProgressChart } from '@/components/dashboard/progress-chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, QrCode } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChartContainer } from '@/components/ui/chart';
-import { QrCodeScanner } from '@/components/dashboard/qr-code-scanner';
 import Link from 'next/link';
 
 const teacherNavItems: NavItem[] = [
@@ -24,50 +21,29 @@ const teacherNavItems: NavItem[] = [
   { title: 'Assignments', href: '/teacher/assignments', icon: 'BookUser' },
 ];
 
-export default function TeacherDashboardPage() {
+export default function TeacherStudentsPage() {
     const searchParams = useSearchParams();
     const selectedClass = searchParams.get('class');
-    const role = searchParams.get('role') || 'Subject Teacher'; // Default to Subject Teacher if no role
 
     const filteredStudents = selectedClass ? students.filter(s => s.class === selectedClass) : students;
-
-    const chartData = filteredStudents.map(s => ({ name: s.name, "Average Score": s.overallScore }));
-    const chartConfig = {
-        "Average Score": {
-          label: "Average Score",
-          color: "hsl(var(--primary))",
-        },
-      };
 
   return (
     <DashboardLayout navItems={teacherNavItems}>
         <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h1 className="text-3xl font-bold font-headline">{role.replace(/([A-Z])/g, ' $1')} Dashboard {selectedClass && `- Class ${selectedClass}`}</h1>
-              <QrCodeScanner />
-            </div>
-
-            <ChartContainer config={chartConfig}>
-              <ProgressChart 
-                  data={chartData} 
-                  title={`Overall Performance${selectedClass ? `: Class ${selectedClass}` : ''}`}
-                  description="Average scores across all subjects."
-                  dataKey="Average Score"
-                  xAxisKey="name"
-              />
-            </ChartContainer>
             <Card>
                 <CardHeader>
-                    <CardTitle className='font-headline'>Student Overview</CardTitle>
-                    <CardDescription>Detailed progress for each student in your class.</CardDescription>
+                    <CardTitle className='font-headline'>All Students</CardTitle>
+                    <CardDescription>
+                        {selectedClass ? `Showing students for class ${selectedClass}` : 'Showing all students.'}
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Student</TableHead>
-                                {role === 'Class Teacher' && <TableHead className="text-center hidden sm:table-cell">Courses Completed</TableHead>}
-                                {role !== 'Class Teacher' && <TableHead className="text-center">Overall Score</TableHead>}
+                                <TableHead className="text-center hidden sm:table-cell">Courses Completed</TableHead>
+                                <TableHead className="text-center">Overall Score</TableHead>
                                 <TableHead className="text-center hidden md:table-cell">Attendance</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -88,17 +64,13 @@ export default function TeacherDashboardPage() {
                                             </div>
                                         </TableCell>
 
-                                        {role === 'Class Teacher' && (
-                                            <TableCell className="text-center hidden sm:table-cell">
-                                                <Badge variant="secondary">{student.completedCourses}</Badge>
-                                            </TableCell>
-                                        )}
+                                        <TableCell className="text-center hidden sm:table-cell">
+                                            <Badge variant="secondary">{student.completedCourses}</Badge>
+                                        </TableCell>
 
-                                        {role !== 'Class Teacher' && (
-                                            <TableCell className="text-center">
-                                                <Badge className={`${scoreColor} text-white`}>{student.overallScore}%</Badge>
-                                            </TableCell>
-                                        )}
+                                        <TableCell className="text-center">
+                                            <Badge className={`${scoreColor} text-white`}>{student.overallScore}%</Badge>
+                                        </TableCell>
                                         
                                         <TableCell className="text-center hidden md:table-cell">{student.attendance}%</TableCell>
                                         <TableCell className="text-right">
@@ -107,7 +79,7 @@ export default function TeacherDashboardPage() {
                                                 <Button variant="ghost" size="icon"><MoreHorizontal className='h-4 w-4'/></Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                <DropdownMenuItem asChild>
+                                                 <DropdownMenuItem asChild>
                                                     <Link href={`/teacher/students/${student.id}`}>View Report</Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem>Send Message</DropdownMenuItem>
