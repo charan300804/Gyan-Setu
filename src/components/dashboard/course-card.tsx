@@ -48,7 +48,7 @@ export function CourseCard({ course }: CourseCardProps) {
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <Button asChild size="sm" className="w-full group">
-          <Link href="/student/quiz">
+          <Link href={`/student/courses/${course.id}`}>
             {course.progress > 0 ? 'Continue Learning' : 'Start Course'}
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
