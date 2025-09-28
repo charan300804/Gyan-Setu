@@ -17,13 +17,12 @@ const Logo = () => (
 export function AppHeader() {
   const userAvatar = PlaceHolderImages.find(img => img.id === 'avatar-male-1');
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6 justify-between">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <div className="flex items-center gap-4">
-        <SidebarTrigger className="md:hidden" />
-        <Logo />
+        <SidebarTrigger className="sm:hidden" />
       </div>
 
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-2 md:gap-4 ml-auto">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className='w-8 h-8'>

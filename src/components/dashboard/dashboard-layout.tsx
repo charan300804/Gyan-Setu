@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { SidebarProvider, Sidebar, SidebarInset, SidebarRail } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/dashboard/app-sidebar';
 import { AppHeader } from '@/components/dashboard/app-header';
 import type { NavItem } from '@/lib/types';
@@ -12,13 +12,13 @@ type DashboardLayoutProps = {
 export function DashboardLayout({ navItems, children }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
-      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] group-data-[state=collapsed]/sidebar-wrapper:md:grid-cols-[4rem_1fr]">
+      <div className="flex min-h-screen w-full bg-muted/40">
         <Sidebar collapsible='icon'>
           <AppSidebar navItems={navItems} />
         </Sidebar>
-        <div className='flex flex-col'>
+        <div className='flex flex-col sm:gap-4 sm:py-4 sm:pl-14 flex-1'>
           <AppHeader />
-          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+          <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
             {children}
           </main>
         </div>

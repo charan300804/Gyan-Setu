@@ -31,7 +31,7 @@ export function AppSidebar({ navItems }: { navItems: NavItem[] }) {
           <div className={cn("transition-all duration-300 ease-in-out", open ? 'opacity-100' : 'opacity-0 w-0')}>
             <Logo />
           </div>
-          <SidebarTrigger className='h-8 w-8' />
+          <SidebarTrigger className='h-8 w-8 hidden sm:flex' />
         </SidebarHeader>
         <Separator className='mx-4 w-auto bg-border' />
         <SidebarContent className="p-4">
@@ -47,7 +47,7 @@ export function AppSidebar({ navItems }: { navItems: NavItem[] }) {
                 >
                     <Link href={item.href}>
                     <Icon />
-                    <span className='group-data-[state=collapsed]/sidebar-wrapper:hidden'>{item.title}</span>
+                    <span className={cn(!open && "hidden")}>{item.title}</span>
                     </Link>
                 </SidebarMenuButton>
                 </SidebarMenuItem>

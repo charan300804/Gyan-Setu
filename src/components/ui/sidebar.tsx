@@ -207,20 +207,18 @@ const Sidebar = React.forwardRef<
     }
 
     return (
-      <div
+      <aside
         ref={ref}
         data-side={side}
         className={cn(
-            "hidden border-r bg-sidebar md:block text-sidebar-foreground",
-            open ? 'w-[220px] lg:w-[280px]' : 'w-[4rem]',
-            "transition-all duration-300 ease-in-out",
+            "hidden sm:flex flex-col h-full bg-background sm:border-r",
             className
         )}
       >
-        <div data-sidebar="sidebar" className="flex h-full max-h-screen flex-col gap-2">
+        <div data-sidebar="sidebar" className={cn("flex h-full max-h-screen flex-col gap-2", open ? "w-60" : "w-14 items-center")}>
             {children}
         </div>
-      </div>
+      </aside>
     )
   }
 )
