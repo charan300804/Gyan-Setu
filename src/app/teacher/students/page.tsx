@@ -52,7 +52,6 @@ export default function TeacherStudentsPage() {
                     <TableBody>
                         {filteredStudents.map(student => {
                             const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
-                            const scoreColor = student.overallScore > 80 ? 'bg-green-500' : student.overallScore > 60 ? 'bg-yellow-500' : 'bg-red-500';
                             return (
                                 <TableRow key={student.id}>
                                     <TableCell>
@@ -61,7 +60,10 @@ export default function TeacherStudentsPage() {
                                                 <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
                                                 <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
-                                            <span className='font-medium'>{student.name}</span>
+                                            <div className='flex flex-col'>
+                                                <span className='font-medium'>{student.name}</span>
+                                                <span className='text-xs text-muted-foreground'>{student.class}</span>
+                                            </div>
                                         </div>
                                     </TableCell>
 
@@ -70,7 +72,7 @@ export default function TeacherStudentsPage() {
                                     </TableCell>
 
                                     <TableCell className="text-center">
-                                        <Badge className={`${scoreColor} text-white`}>{student.overallScore}%</Badge>
+                                        <Badge variant={student.overallScore > 80 ? 'default' : student.overallScore > 60 ? 'secondary' : 'destructive'} >{student.overallScore}%</Badge>
                                     </TableCell>
                                     
                                     <TableCell className="text-center hidden md:table-cell">{student.attendance}%</TableCell>

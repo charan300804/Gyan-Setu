@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { NavItem } from '@/lib/types';
 import { students } from '@/lib/data';
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { QrCodeScanner } from '@/components/dashboard/qr-code-scanner';
 import Link from 'next/link';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const teacherNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -26,24 +27,50 @@ const teacherNavItems: NavItem[] = [
 
 export default function TeacherDashboardPage() {
     const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
     const selectedClass = searchParams.get('class');
-    const role = searchParams.get('role') || 'Subject Teacher';
+    const role = searchParams.get('role') || 'Principal';
 
     const filteredStudents = selectedClass ? students.filter(s => s.class === selectedClass) : students;
+    const availableClasses = ['All Classes', ...Array.from(new Set(students.map(s => s.class)))];
 
     const chartData = filteredStudents.map(s => ({ name: s.name, "Average Score": s.overallScore, "Attendance": s.attendance }));
     const classAverageScore = Math.round(filteredStudents.reduce((acc, s) => acc + s.overallScore, 0) / (filteredStudents.length || 1));
     const classAverageAttendance = Math.round(filteredStudents.reduce((acc, s) => acc + s.attendance, 0) / (filteredStudents.length || 1));
 
+    const handleClassChange = (value: string) => {
+        const params = new URLSearchParams(searchParams);
+        if (value === 'All Classes') {
+            params.delete('class');
+        } else {
+            params.set('class', value);
+        }
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
   return (
     <DashboardLayout navItems={teacherNavItems}>
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{role.replace(/([A-Z])/g, ' $1')} Dashboard</h1>
             <p className="text-muted-foreground">{selectedClass ? `Viewing Class ${selectedClass}` : 'Viewing All Students'}</p>
           </div>
-          <QrCodeScanner />
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            {role === 'Principal' && (
+                <Select onValueChange={handleClassChange} value={selectedClass || 'All Classes'}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Select a class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {availableClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            )}
+            <QrCodeScanner />
+          </div>
         </div>
         
         <div className="grid gap-4 md:grid-cols-3">
@@ -57,7 +84,7 @@ export default function TeacherDashboardPage() {
             <ProgressChart 
                 data={chartData} 
                 title={`Overall Performance${selectedClass ? `: Class ${selectedClass}` : ''}`}
-                description="Average scores and attendance across all subjects."
+                description="Average scores and attendance for each student."
                 dataKey="Average Score"
                 xAxisKey="name"
             />
@@ -67,7 +94,7 @@ export default function TeacherDashboardPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Student Overview</CardTitle>
-                    <CardDescription>A quick look at student performance.</CardDescription>
+                    <CardDescription>A quick look at student performance in {selectedClass ? `Class ${selectedClass}` : 'all classes'}.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -121,10 +148,13 @@ export default function TeacherDashboardPage() {
                      {filteredStudents.length > 5 && (
                         <div className='text-center mt-4'>
                             <Button variant="ghost" asChild>
-                                <Link href="/teacher/students">View All Students &rarr;</Link>
+                                <Link href={`/teacher/students${selectedClass ? `?class=${selectedClass}` : ''}`}>View All Students &rarr;</Link>
                             </Button>
                         </div>
                     )}
+                     {filteredStudents.length === 0 && (
+                        <p className="text-center text-muted-foreground py-4">No students found for this class.</p>
+                     )}
                 </CardContent>
             </Card>
           </div>
