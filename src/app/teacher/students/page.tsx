@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import type { NavItem } from '@/lib/types';
@@ -9,10 +10,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import { Input } from '@/components/ui/input';
 
 const teacherNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -25,18 +27,32 @@ const teacherNavItems: NavItem[] = [
 export default function TeacherStudentsPage() {
     const searchParams = useSearchParams();
     const selectedClass = searchParams.get('class');
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredStudents = selectedClass ? students.filter(s => s.class === selectedClass) : students;
+    const filteredStudents = students
+        .filter(s => selectedClass ? s.class === selectedClass : true)
+        .filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <DashboardLayout navItems={teacherNavItems}>
       <div className="flex flex-col gap-4">
         <Card>
-            <CardHeader>
-                <CardTitle>All Students</CardTitle>
-                <CardDescription>
-                    {selectedClass ? `Showing students for class ${selectedClass}` : 'Showing all students.'}
-                </CardDescription>
+            <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <CardTitle>All Students</CardTitle>
+                    <CardDescription>
+                        {selectedClass ? `Showing students for class ${selectedClass}` : 'Showing all students.'}
+                    </CardDescription>
+                </div>
+                <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search by student name..." 
+                        className="pl-8" 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -50,7 +66,7 @@ export default function TeacherStudentsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredStudents.map(student => {
+                        {filteredStudents.length > 0 ? filteredStudents.map(student => {
                             const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
                             return (
                                 <TableRow key={student.id}>
@@ -93,7 +109,13 @@ export default function TeacherStudentsPage() {
                                     </TableCell>
                                 </TableRow>
                             )
-                        })}
+                        }) : (
+                             <TableRow>
+                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                    No students found for your search.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>
