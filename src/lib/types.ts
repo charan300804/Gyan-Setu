@@ -31,10 +31,12 @@ export type Student = {
   completedCourses: number;
 };
 
+export type TeacherRole = 'Class Teacher' | 'Subject Teacher';
+
 export type Teacher = {
     id: string;
     name: string;
-    role: 'Class Teacher' | 'Subject Teacher';
+    role: TeacherRole;
     assignment: string;
     avatarId: string;
 };
