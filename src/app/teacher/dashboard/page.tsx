@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, QrCode } from 'lucide-react';
+import { MoreHorizontal, Users, BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ChartContainer } from '@/components/ui/chart';
@@ -31,97 +31,107 @@ export default function TeacherDashboardPage() {
 
     const filteredStudents = selectedClass ? students.filter(s => s.class === selectedClass) : students;
 
-    const chartData = filteredStudents.map(s => ({ name: s.name, "Average Score": s.overallScore }));
-    const chartConfig = {
-        "Average Score": {
-          label: "Average Score",
-          color: "hsl(var(--primary))",
-        },
-      };
+    const chartData = filteredStudents.map(s => ({ name: s.name, "Average Score": s.overallScore, "Attendance": s.attendance }));
 
   return (
     <DashboardLayout navItems={teacherNavItems}>
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h1 className="text-3xl font-bold font-headline">{role.replace(/([A-Z])/g, ' $1')} Dashboard {selectedClass && `- Class ${selectedClass}`}</h1>
+              <div>
+                <h1 className="text-3xl font-bold font-headline">{role.replace(/([A-Z])/g, ' $1')} Dashboard</h1>
+                <p className="text-muted-foreground">{selectedClass ? `Viewing Class ${selectedClass}` : 'Viewing All Students'}</p>
+              </div>
               <QrCodeScanner />
             </div>
+            
+            <div className="grid gap-4 md:grid-cols-3">
+                <StatCard icon={<Users />} title="Total Students" value={filteredStudents.length.toString()} />
+                <StatCard icon={<BarChart2 />} title="Class Average Score" value={`${Math.round(filteredStudents.reduce((acc, s) => acc + s.overallScore, 0) / filteredStudents.length)}%`} />
+                <StatCard icon={<BarChart2 />} title="Class Average Attendance" value={`${Math.round(filteredStudents.reduce((acc, s) => acc + s.attendance, 0) / filteredStudents.length)}%`} />
+            </div>
 
-            <ChartContainer config={chartConfig}>
-              <ProgressChart 
-                  data={chartData} 
-                  title={`Overall Performance${selectedClass ? `: Class ${selectedClass}` : ''}`}
-                  description="Average scores across all subjects."
-                  dataKey="Average Score"
-                  xAxisKey="name"
-              />
-            </ChartContainer>
-            <Card>
-                <CardHeader>
-                    <CardTitle className='font-headline'>Student Overview</CardTitle>
-                    <CardDescription>Detailed progress for each student in your class.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Student</TableHead>
-                                {role === 'Class Teacher' && <TableHead className="text-center hidden sm:table-cell">Courses Completed</TableHead>}
-                                {role !== 'Class Teacher' && <TableHead className="text-center">Overall Score</TableHead>}
-                                <TableHead className="text-center hidden md:table-cell">Attendance</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredStudents.map(student => {
-                                const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
-                                const scoreColor = student.overallScore > 80 ? 'bg-green-500' : student.overallScore > 60 ? 'bg-yellow-500' : 'bg-red-500';
-                                return (
-                                    <TableRow key={student.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-4">
-                                                <Avatar>
-                                                    <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
-                                                    <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <span className='font-medium'>{student.name}</span>
-                                            </div>
-                                        </TableCell>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              <div className="lg:col-span-3">
+                <ProgressChart 
+                    data={chartData} 
+                    title={`Overall Performance${selectedClass ? `: Class ${selectedClass}` : ''}`}
+                    description="Average scores and attendance across all subjects."
+                    dataKey="Average Score"
+                    xAxisKey="name"
+                />
+              </div>
 
-                                        {role === 'Class Teacher' && (
-                                            <TableCell className="text-center hidden sm:table-cell">
-                                                <Badge variant="secondary">{student.completedCourses}</Badge>
+              <div className="lg:col-span-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className='font-headline'>Student Overview</CardTitle>
+                        <CardDescription>Detailed progress for each student.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Student</TableHead>
+                                    <TableHead className="text-center">Score</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredStudents.map(student => {
+                                    const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
+                                    const scoreColor = student.overallScore > 80 ? 'text-green-500' : student.overallScore > 60 ? 'text-yellow-500' : 'text-red-500';
+                                    return (
+                                        <TableRow key={student.id}>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="w-8 h-8">
+                                                        <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
+                                                        <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className='font-medium'>{student.name}</span>
+                                                </div>
                                             </TableCell>
-                                        )}
-
-                                        {role !== 'Class Teacher' && (
                                             <TableCell className="text-center">
-                                                <Badge className={`${scoreColor} text-white`}>{student.overallScore}%</Badge>
+                                                <Badge variant="outline" className={`${scoreColor} border-current`}>{student.overallScore}%</Badge>
                                             </TableCell>
-                                        )}
-                                        
-                                        <TableCell className="text-center hidden md:table-cell">{student.attendance}%</TableCell>
-                                        <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon"><MoreHorizontal className='h-4 w-4'/></Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={`/teacher/students/${student.id}`}>View Report</Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem>Send Message</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                                            <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon"><MoreHorizontal className='h-4 w-4'/></Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={`/teacher/students/${student.id}`}>View Full Report</Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>Send Message</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+              </div>
+            </div>
         </div>
     </DashboardLayout>
   );
+}
+
+
+function StatCard({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) {
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <div className="text-muted-foreground">{icon}</div>
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+            </CardContent>
+        </Card>
+    );
 }
