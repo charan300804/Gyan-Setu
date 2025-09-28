@@ -19,8 +19,8 @@ const studentNavItems: NavItem[] = [
     { title: 'Quizzes', href: '/student/quiz', icon: 'Trophy' },
 ];
 
-export default function CourseDetailPage({ params }: { params: { courseId: string } }) {
-    const course = courses.find(c => c.id === params.courseId);
+export default function CourseDetailPage({ params: { courseId } }: { params: { courseId: string } }) {
+    const course = courses.find(c => c.id === courseId);
 
     if (!course) {
         return (
