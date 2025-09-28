@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -69,11 +70,18 @@ const SidebarProvider = React.forwardRef<
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
-    const [_open, _setOpen] = React.useState(() => {
-        if (typeof window === 'undefined') return defaultOpen;
-        const cookie = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
-        return cookie ? cookie.split('=')[1] === 'true' : defaultOpen;
-    });
+    const [_open, _setOpen] = React.useState(defaultOpen);
+
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const cookie = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
+            const cookieValue = cookie ? cookie.split('=')[1] === 'true' : defaultOpen;
+            if (openProp === undefined) { // only set from cookie if not controlled
+                _setOpen(cookieValue);
+            }
+        }
+    }, [defaultOpen, openProp]);
+
 
     const open = openProp ?? _open
     const setOpen = React.useCallback(
@@ -215,7 +223,7 @@ const Sidebar = React.forwardRef<
             className
         )}
       >
-        <div data-sidebar="sidebar" className={cn("flex h-full max-h-screen flex-col gap-2", open ? "w-60" : "w-14 items-center")}>
+        <div data-sidebar="sidebar" className={cn("flex h-full max-h-screen flex-col gap-2 transition-[width]", open ? "w-60" : "w-14 items-center")}>
             {children}
         </div>
       </aside>
