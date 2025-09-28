@@ -28,7 +28,8 @@ import { Separator } from '../ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const formSchema = z.object({
   email: z.string().min(1, { message: 'ID is required.' }),
@@ -63,20 +64,50 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
     const queryParams = new URLSearchParams(searchParams);
 
     if (values.class) {
-      queryParams.append('class', values.class);
+      queryParams.set('class', values.class);
     }
     
     if (role === 'Class Teacher' || role === 'Subject Teacher' || role === 'Principal') {
-      queryParams.append('role', role);
+      queryParams.set('role', role);
     }
     
     try {
-        if (role === 'Student' && !values.class) {
+        if (role === 'Student' && !values.class && redirectUrl.includes('student')) {
             form.setError('class', { type: 'manual', message: 'Please select your class.'});
             return;
         }
 
-        await signInWithEmailAndPassword(auth, values.email, values.password);
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+        const user = userCredential.user;
+
+        // Verify the user's role matches the login form's role
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        
+        if (!userDocSnap.exists()) {
+             throw new Error("User data not found.");
+        }
+        
+        const userData = userDocSnap.data();
+        const userRole = userData.role;
+
+        const isStudentLogin = redirectUrl.includes('student');
+        const isParentLogin = redirectUrl.includes('parent');
+        const isTeacherLogin = redirectUrl.includes('teacher');
+        
+        if (isStudentLogin && userRole !== 'Student') {
+            throw new Error(`This login is for students. You are logged in as a ${userRole}.`);
+        }
+        if (isParentLogin && userRole !== 'Student') {
+             throw new Error(`Parent login requires student credentials. The provided account is not a student account.`);
+        }
+        if (isTeacherLogin && !['Class Teacher', 'Subject Teacher', 'Principal'].includes(userRole)) {
+            throw new Error(`This login is for teachers/principals. You are logged in as a ${userRole}.`);
+        }
+        if (isTeacherLogin && userRole !== role) {
+             throw new Error(`Account role mismatch. Please use the '${userRole}' login page.`);
+        }
+
 
         if (queryParams.toString()) {
             finalRedirectUrl = `${redirectUrl}?${queryParams.toString()}`;
@@ -89,24 +120,24 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
         toast({
             variant: "destructive",
             title: "Login Failed",
-            description: "Invalid credentials. Please try again.",
+            description: error.message || "Invalid credentials. Please try again.",
         });
         form.setError('email', { type: 'manual', message: 'Invalid credentials.' });
         form.setError('password', { type: 'manual', message: ' ' });
     }
   }
   
-  const backLink = role === "Student" || role === "Parent" ? "/" : "/teacher";
-  
+  const isTeacherLogin = ['Principal', 'Class Teacher', 'Subject Teacher'].includes(role);
+
   const getLabel = () => {
+    if (redirectUrl.includes('/parent')) return "Your Child's Email";
     if (role === 'Student') return 'Student Email';
-    if (role === 'Parent') return "Child's Email";
     return 'Email / Staff ID';
   }
 
   const getPlaceholder = () => {
+    if (redirectUrl.includes('/parent')) return "Your child's registered email";
     if (role === 'Student') return 'Your registered email';
-    if (role === 'Parent') return "Your child's registered email";
     return 'you@example.com or staff ID';
   }
 
@@ -138,7 +169,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                   </FormItem>
                 )}
               />
-              {(role === 'Student') && (
+              {(role === 'Student' && redirectUrl.includes('/student')) && (
                 <FormField
                   control={form.control}
                   name="class"
@@ -193,12 +224,12 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                   </Button>
                 </>
               )}
-               {role !== 'Student' && role !== 'Parent' && (
+               {isTeacherLogin && (
                  <Button variant="link" size="sm" asChild className="w-full mt-4">
                     <Link href={'/teacher'}>&larr; Back to Role Selection</Link>
                 </Button>
                )}
-               {(role === 'Student' || role === 'Parent') && (
+               {!isTeacherLogin && (
                 <Button variant="link" size="sm" asChild className="w-full mt-4">
                     <Link href={'/'}>&larr; Back to Home</Link>
                 </Button>
