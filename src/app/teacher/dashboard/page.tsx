@@ -37,8 +37,12 @@ export default function TeacherDashboardPage() {
     const availableClasses = ['All Classes', ...Array.from(new Set(students.map(s => s.class)))];
 
     const chartData = filteredStudents.map(s => ({ name: s.name, "Average Score": s.overallScore, "Attendance": s.attendance }));
-    const classAverageScore = Math.round(filteredStudents.reduce((acc, s) => acc + s.overallScore, 0) / (filteredStudents.length || 1));
-    const classAverageAttendance = Math.round(filteredStudents.reduce((acc, s) => acc + s.attendance, 0) / (filteredStudents.length || 1));
+    
+    const schoolAverageScore = Math.round(students.reduce((acc, s) => acc + s.overallScore, 0) / (students.length || 1));
+    const schoolAverageAttendance = Math.round(students.reduce((acc, s) => acc + s.attendance, 0) / (students.length || 1));
+
+    const classAverageScore = selectedClass ? Math.round(filteredStudents.reduce((acc, s) => acc + s.overallScore, 0) / (filteredStudents.length || 1)) : 0;
+    const classAverageAttendance = selectedClass ? Math.round(filteredStudents.reduce((acc, s) => acc + s.attendance, 0) / (filteredStudents.length || 1)) : 0;
 
     const handleClassChange = (value: string) => {
         const params = new URLSearchParams(searchParams);
@@ -52,118 +56,108 @@ export default function TeacherDashboardPage() {
 
   return (
     <DashboardLayout navItems={teacherNavItems}>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{role.replace(/([A-Z])/g, ' $1')} Dashboard</h1>
-            <p className="text-muted-foreground">{selectedClass ? `Viewing Class ${selectedClass}` : 'Viewing All Students'}</p>
-          </div>
-          <div className="flex items-center gap-4 w-full sm:w-auto">
+        <div className="flex flex-col gap-8">
+            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">{role.replace(/([A-Z])/g, ' $1')} Dashboard</h1>
+                <p className="text-muted-foreground">
+                    {role === 'Principal' ? "School-wide performance overview." : `Welcome to your dashboard.`}
+                </p>
+            </div>
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+                <QrCodeScanner />
+            </div>
+            </header>
+
             {role === 'Principal' && (
-                <Select onValueChange={handleClassChange} value={selectedClass || 'All Classes'}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Select a class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {availableClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            )}
-            <QrCodeScanner />
-          </div>
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-3">
-            <StatCard icon={<Users />} title="Total Students" value={filteredStudents.length.toString()} />
-            <StatCard icon={<BarChart2 />} title="Class Average Score" value={`${classAverageScore}%`} />
-            <StatCard icon={<Activity />} title="Class Average Attendance" value={`${classAverageAttendance}%`} />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
-          <div className="xl:col-span-3">
-            <ProgressChart 
-                data={chartData} 
-                title={`Overall Performance${selectedClass ? `: Class ${selectedClass}` : ''}`}
-                description="Average scores and attendance for each student."
-                dataKey="Average Score"
-                xAxisKey="name"
-            />
-          </div>
-
-          <div className="xl:col-span-2">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Student Overview</CardTitle>
-                    <CardDescription>A quick look at student performance in {selectedClass ? `Class ${selectedClass}` : 'all classes'}.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Student</TableHead>
-                                <TableHead className="text-center">Score</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredStudents.slice(0, 5).map(student => {
-                                const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
-                                return (
-                                    <TableRow key={student.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="w-9 h-9">
-                                                    <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
-                                                    <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div className='flex flex-col'>
-                                                    <span className='font-medium'>{student.name}</span>
-                                                    <span className='text-xs text-muted-foreground'>{student.class}</span>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Badge variant="outline">{student.overallScore}%</Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon"><MoreHorizontal className='h-4 w-4'/></Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={`/teacher/students/${student.id}`}>View Full Report</Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem asChild>
-                                                  <Link href={`/teacher/chat?contactId=contact-2`}>Send Message</Link>
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
-                     {filteredStudents.length > 5 && (
-                        <div className='text-center mt-4'>
-                            <Button variant="ghost" asChild>
-                                <Link href={`/teacher/students${selectedClass ? `?class=${selectedClass}` : ''}`}>View All Students &rarr;</Link>
-                            </Button>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>School-wide Analytics</CardTitle>
+                        <CardDescription>Select a class to view detailed performance.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="md:col-span-1">
+                            <Select onValueChange={handleClassChange} value={selectedClass || 'All Classes'}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select a class" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {availableClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
                         </div>
-                    )}
-                     {filteredStudents.length === 0 && (
-                        <p className="text-center text-muted-foreground py-4">No students found for this class.</p>
-                     )}
-                </CardContent>
-            </Card>
-          </div>
-        </div>
+                        <div className='md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6'>
+                            <StatCard icon={<Users />} title="Total Students" value={students.length.toString()} />
+                            <StatCard icon={<BarChart2 />} title="School Average Score" value={`${schoolAverageScore}%`} />
+                            <StatCard icon={<Activity />} title="School Average Attendance" value={`${schoolAverageAttendance}%`} />
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {selectedClass ? (
+                 <section className="space-y-6">
+                    <h2 className="text-2xl font-bold font-headline">Class {selectedClass} Performance</h2>
+                    <div className="grid gap-4 md:grid-cols-3">
+                        <StatCard icon={<Users />} title="Students in Class" value={filteredStudents.length.toString()} />
+                        <StatCard icon={<BarChart2 />} title="Class Average Score" value={`${classAverageScore}%`} />
+                        <StatCard icon={<Activity />} title="Class Average Attendance" value={`${classAverageAttendance}%`} />
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
+                        <div className="xl:col-span-3">
+                            <ProgressChart 
+                                data={chartData} 
+                                title={`Student Performance: Class ${selectedClass}`}
+                                description="Average scores and attendance for each student."
+                                dataKey="Average Score"
+                                xAxisKey="name"
+                            />
+                        </div>
+                        <div className="xl:col-span-2">
+                             <Card>
+                                <CardHeader>
+                                    <CardTitle>Student Details</CardTitle>
+                                    <CardDescription>Individual student data for Class {selectedClass}.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                     <StudentTable students={filteredStudents} />
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                 </section>
+            ) : role === 'Principal' ? (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>All Students Overview</CardTitle>
+                        <CardDescription>A quick look at student performance across all classes.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <StudentTable students={students} />
+                         {students.length > 10 && (
+                            <div className='text-center mt-4'>
+                                <Button variant="ghost" asChild>
+                                    <Link href={`/teacher/students`}>View All Students &rarr;</Link>
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            ) : (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>My Students</CardTitle>
+                        <CardDescription>Performance overview for your assigned students.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <StudentTable students={filteredStudents} />
+                    </CardContent>
+                </Card>
+            )}
         </div>
     </DashboardLayout>
   );
 }
-
 
 function StatCard({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) {
     return (
@@ -177,4 +171,62 @@ function StatCard({ icon, title, value }: { icon: React.ReactNode; title: string
             </CardContent>
         </Card>
     );
+}
+
+function StudentTable({ students }: { students: typeof import('@/lib/data').students }) {
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Student</TableHead>
+                    <TableHead className="text-center">Score</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {students.slice(0, 10).map(student => {
+                    const avatar = PlaceHolderImages.find(img => img.id === student.avatarId);
+                    return (
+                        <TableRow key={student.id}>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="w-9 h-9">
+                                        <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
+                                        <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className='flex flex-col'>
+                                        <span className='font-medium'>{student.name}</span>
+                                        <span className='text-xs text-muted-foreground'>{student.class}</span>
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                                <Badge variant={student.overallScore > 80 ? 'default' : student.overallScore > 60 ? 'secondary' : 'destructive'}>{student.overallScore}%</Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon"><MoreHorizontal className='h-4 w-4'/></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem asChild>
+                                        <Link href={`/teacher/students/${student.id}`}>View Full Report</Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                      <Link href={`/teacher/chat?contactId=contact-2`}>Send Message</Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    )
+                })}
+                 {students.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={3} className="text-center text-muted-foreground py-4">No students found.</TableCell>
+                    </TableRow>
+                )}
+            </TableBody>
+        </Table>
+    )
 }
