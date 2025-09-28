@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarInset, SidebarRail } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/dashboard/app-sidebar';
 import { AppHeader } from '@/components/dashboard/app-header';
 import type { NavItem } from '@/lib/types';
@@ -11,10 +11,11 @@ type DashboardLayoutProps = {
 
 export function DashboardLayout({ navItems, children }: DashboardLayoutProps) {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen">
-        <Sidebar>
+        <Sidebar collapsible='icon'>
           <AppSidebar navItems={navItems} />
+          <SidebarRail />
         </Sidebar>
         <SidebarInset>
           <AppHeader />

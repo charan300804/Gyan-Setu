@@ -9,18 +9,22 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 
 const Logo = () => (
-    <Link href="/" className="text-2xl font-bold font-headline text-primary tracking-tighter hidden md:block">
-      Gyan<span className="text-accent">Setu</span>
-    </Link>
+    <div className="flex items-center gap-2">
+      <SidebarTrigger className="h-8 w-8" />
+      <div className="text-2xl font-bold font-headline text-primary tracking-tighter hidden md:block group-data-[state=collapsed]:hidden">
+        <Link href="/">
+          Gyan<span className="text-accent">Setu</span>
+        </Link>
+      </div>
+    </div>
   );
 
 export function AppHeader() {
   const userAvatar = PlaceHolderImages.find(img => img.id === 'avatar-male-1');
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
-        <SidebarTrigger className="md:hidden"/>
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6 justify-between">
         <Logo />
-      <div className="flex w-full items-center justify-end gap-4">
+      <div className="flex items-center gap-4">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
