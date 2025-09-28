@@ -4,11 +4,13 @@ import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import { NavItem } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CourseCard } from '@/components/dashboard/course-card';
-import { courses } from '@/lib/data';
+import { courses, students } from '@/lib/data';
 import { AdaptiveLearningTool } from '@/components/dashboard/adaptive-learning-tool';
 import { QrCodeGenerator } from '@/components/dashboard/qr-code-generator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const studentNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -18,14 +20,34 @@ const studentNavItems: NavItem[] = [
 ];
 
 export default function StudentDashboardPage() {
-  const inProgressCourses = courses.filter(c => c.progress > 0 && c.progress < 100);
+  const searchParams = useSearchParams();
+  const studentClass = searchParams.get('class');
+  const [studentName, setStudentName] = useState('Back');
+
+  useEffect(() => {
+    const storedStudentData = localStorage.getItem('studentCredentials');
+    if (storedStudentData) {
+        const student = JSON.parse(storedStudentData);
+        setStudentName(student.fullName.split(' ')[0] || 'Back');
+    }
+  }, []);
+  
+  // Filter courses relevant to the student's class or language
+  const relevantCourses = courses.filter(c => {
+    // A simple logic: show English/Typing/Internet courses to all, and others based on class language.
+    // This can be made more sophisticated. For now, we'll just show all.
+    return true; 
+  });
+
+  const inProgressCourses = relevantCourses.filter(c => c.progress > 0 && c.progress < 100);
+  const newCourses = relevantCourses.filter(c => c.progress === 0).slice(0, 2);
   
   return (
     <DashboardLayout navItems={studentNavItems}>
         <div className="space-y-8">
             <Card className="bg-primary/5 border-primary/20 shadow-sm">
                 <CardHeader>
-                    <CardTitle className="font-headline text-2xl md:text-3xl">Welcome Back, Rohan!</CardTitle>
+                    <CardTitle className="font-headline text-2xl md:text-3xl">Welcome {studentName}, to Class {studentClass}!</CardTitle>
                     <CardDescription>Ready to continue your learning journey? Let's make today productive.</CardDescription>
                 </CardHeader>
             </Card>
@@ -54,7 +76,7 @@ export default function StudentDashboardPage() {
                 <section>
                     <h2 className="text-2xl font-bold mb-4 font-headline tracking-tight">Explore New Courses</h2>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
-                        {courses.filter(c => c.progress === 0).slice(0, 2).map(course => (
+                        {newCourses.map(course => (
                             <CourseCard key={course.id} course={course} />
                         ))}
                     </div>

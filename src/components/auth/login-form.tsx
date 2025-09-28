@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,6 +43,7 @@ type LoginFormProps = {
 
 export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,7 +64,11 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
         const studentCredentials = JSON.parse(storedStudentData);
         if (values.email === studentCredentials.email && values.password === studentCredentials.password) {
           // Credentials match
-          router.push(redirectUrl);
+          const queryParams = new URLSearchParams(searchParams);
+           if (values.class) {
+              queryParams.set('class', values.class);
+            }
+          router.push(`${redirectUrl}?${queryParams.toString()}`);
           return;
         }
       }
@@ -82,7 +87,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
     console.log(values);
     
     let finalRedirectUrl = redirectUrl;
-    const queryParams = new URLSearchParams();
+    const queryParams = new URLSearchParams(searchParams);
 
     if (values.class) {
       queryParams.append('class', values.class);
@@ -141,17 +146,17 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
                   </FormItem>
                 )}
               />
-              {(role === 'Class Teacher' || role === 'Subject Teacher') && (
+              {(role === 'Class Teacher' || role === 'Subject Teacher' || role === 'Student') && (
                 <FormField
                   control={form.control}
                   name="class"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Class</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} required={role === 'Student'}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a class" />
+                            <SelectValue placeholder="Select your class" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
