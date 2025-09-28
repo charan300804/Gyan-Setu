@@ -20,8 +20,8 @@ const teacherNavItems: NavItem[] = [
   { title: 'Messages', href: '/teacher/chat', icon: 'MessageSquare' },
 ];
 
-export default function StudentProfilePage({ params }: { params: { studentId: string } }) {
-    const student = students.find(s => s.id === params.studentId);
+export default function StudentProfilePage({ params: { studentId } }: { params: { studentId: string } }) {
+    const student = students.find(s => s.id === studentId);
 
     if (!student) {
         return (
