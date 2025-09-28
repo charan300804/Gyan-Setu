@@ -4,13 +4,16 @@ import { DashboardLayout } from '@/components/dashboard/dashboard-layout';
 import { NavItem } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CourseCard } from '@/components/dashboard/course-card';
-import { courses, students } from '@/lib/data';
 import { AdaptiveLearningTool } from '@/components/dashboard/adaptive-learning-tool';
 import { QrCodeGenerator } from '@/components/dashboard/qr-code-generator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { auth, db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import type { Course } from '@/lib/types';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 const studentNavItems: NavItem[] = [
   { title: 'Home', href: '/', icon: 'Home' },
@@ -23,25 +26,47 @@ export default function StudentDashboardPage() {
   const searchParams = useSearchParams();
   const studentClass = searchParams.get('class');
   const [studentName, setStudentName] = useState('Back');
+  const [user, setUser] = useState<User | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedStudentData = localStorage.getItem('studentCredentials');
-    if (storedStudentData) {
-        const student = JSON.parse(storedStudentData);
-        setStudentName(student.fullName.split(' ')[0] || 'Back');
-    }
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        setStudentName(currentUser.displayName?.split(' ')[0] || 'Back');
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    async function fetchCourses() {
+      if (!user) return;
+      const coursesCollection = collection(db, 'courses');
+      const courseSnapshot = await getDocs(coursesCollection);
+      const courseList = courseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
+      setCourses(courseList);
+    }
+    fetchCourses();
+  }, [user]);
   
-  // Filter courses relevant to the student's class or language
-  const relevantCourses = courses.filter(c => {
-    // A simple logic: show English/Typing/Internet courses to all, and others based on class language.
-    // This can be made more sophisticated. For now, we'll just show all.
-    return true; 
-  });
+  const relevantCourses = courses; // Filtering logic can be added here based on studentClass
 
   const inProgressCourses = relevantCourses.filter(c => c.progress > 0 && c.progress < 100);
   const newCourses = relevantCourses.filter(c => c.progress === 0).slice(0, 2);
   
+  if (loading) {
+    return (
+      <DashboardLayout navItems={studentNavItems}>
+        <div className="flex justify-center items-center h-full">
+          <p>Loading...</p>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout navItems={studentNavItems}>
         <div className="space-y-8">

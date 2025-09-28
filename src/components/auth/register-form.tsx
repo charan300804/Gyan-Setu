@@ -25,12 +25,18 @@ import { Input } from '@/components/ui/input';
 import { UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
+import { students } from '@/lib/data';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 const formSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   confirmPassword: z.string(),
+  class: z.string().min(1, { message: 'Please select a class.' }),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
@@ -51,25 +57,52 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
       email: '',
       password: '',
       confirmPassword: '',
+      class: '',
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Save credentials to localStorage
-    const credentials = {
-      fullName: values.fullName,
-      email: values.email,
-      password: values.password,
-    };
-    localStorage.setItem('studentCredentials', JSON.stringify(credentials));
+  const availableClasses = Array.from(new Set(students.map(s => s.class)));
 
-    toast({
-      title: "Registration Successful",
-      description: "Your account has been created. You can now log in.",
-    });
-    
-    // Redirect to login page after registration.
-    router.push(redirectUrl);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+
+      await updateProfile(user, {
+        displayName: values.fullName,
+      });
+
+      // Create a document in Firestore for the student
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: values.fullName,
+        email: values.email,
+        role: "Student",
+        class: values.class,
+        // Add other student-related fields with default values
+        overallScore: 0,
+        attendance: 100,
+        completedCourses: 0,
+        avatarId: 'avatar-male-1', // default avatar
+      });
+
+      toast({
+        title: "Registration Successful",
+        description: "Your account has been created. You can now log in.",
+      });
+      
+      // Redirect to login page after registration.
+      router.push(redirectUrl);
+
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message || "An unexpected error occurred.",
+      });
+    }
   }
 
   return (
@@ -116,6 +149,26 @@ export function RegisterForm({ role, redirectUrl }: RegisterFormProps) {
                   </FormItem>
                 )}
               />
+              <FormField
+                  control={form.control}
+                  name="class"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Class</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} required>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your class" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {availableClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               <FormField
                 control={form.control}
                 name="password"

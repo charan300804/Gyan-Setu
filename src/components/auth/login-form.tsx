@@ -28,6 +28,8 @@ import { Separator } from '../ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { students } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 const formSchema = z.object({
   email: z.string().min(1, { message: 'ID is required.' }),
@@ -56,35 +58,7 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
 
   const availableClasses = Array.from(new Set(students.map(s => s.class)));
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // For students, check credentials against localStorage
-    if (role === 'Student') {
-      const storedStudentData = localStorage.getItem('studentCredentials');
-      if (storedStudentData) {
-        const studentCredentials = JSON.parse(storedStudentData);
-        if (values.email === studentCredentials.email && values.password === studentCredentials.password) {
-          // Credentials match
-          const queryParams = new URLSearchParams(searchParams);
-           if (values.class) {
-              queryParams.set('class', values.class);
-            }
-          router.push(`${redirectUrl}?${queryParams.toString()}`);
-          return;
-        }
-      }
-      // If no stored data or credentials don't match
-      form.setError('email', { type: 'manual', message: 'Invalid credentials. Please check your ID and password.' });
-      form.setError('password', { type: 'manual', message: ' ' }); // Clear password error if email is the issue
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
-      });
-      return;
-    }
-
-    // NOTE: This is a mock login for other roles.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     
     let finalRedirectUrl = redirectUrl;
     const queryParams = new URLSearchParams(searchParams);
@@ -96,25 +70,49 @@ export function LoginForm({ role, redirectUrl, showRegistration = true }: LoginF
     if (role === 'Class Teacher' || role === 'Subject Teacher' || role === 'Principal') {
       queryParams.append('role', role);
     }
-
-    if (queryParams.toString()) {
-      finalRedirectUrl = `${redirectUrl}?${queryParams.toString()}`;
-    }
     
-    router.push(finalRedirectUrl);
+    try {
+        if (role === 'Student' || role === 'Parent') {
+             if (role === 'Student' && !values.class) {
+                form.setError('class', { type: 'manual', message: 'Please select your class.'});
+                return;
+            }
+            await signInWithEmailAndPassword(auth, values.email, values.password);
+        } else {
+            // For teacher roles, we still use mock login for now.
+            // In a real app, you'd have a separate teacher auth flow.
+             await signInWithEmailAndPassword(auth, values.email, values.password);
+        }
+
+        if (queryParams.toString()) {
+            finalRedirectUrl = `${redirectUrl}?${queryParams.toString()}`;
+        }
+        
+        router.push(finalRedirectUrl);
+        
+    } catch (error: any) {
+        console.error("Login error:", error);
+        toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: "Invalid credentials. Please try again.",
+        });
+        form.setError('email', { type: 'manual', message: 'Invalid credentials.' });
+        form.setError('password', { type: 'manual', message: ' ' });
+    }
   }
   
   const backLink = role === "Student" || role === "Parent" ? "/" : "/teacher";
   
   const getLabel = () => {
     if (role === 'Student') return 'Student Email';
-    if (role === 'Parent') return "Child's ID";
+    if (role === 'Parent') return "Child's Email";
     return 'Email / Staff ID';
   }
 
   const getPlaceholder = () => {
     if (role === 'Student') return 'Your registered email';
-    if (role === 'Parent') return "Your child's student ID";
+    if (role === 'Parent') return "Your child's registered email";
     return 'you@example.com or staff ID';
   }
 

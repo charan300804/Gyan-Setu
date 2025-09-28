@@ -1,76 +1,12 @@
 import type { Course, Student, Quiz, ChatContact, Conversation, Teacher } from './types';
 
-export const courses: Course[] = [
-  {
-    id: 'diglit-1',
-    title: 'Basic Computer Use',
-    language: 'English',
-    description: 'Learn the fundamentals of using a computer, from turning it on to managing files.',
-    modules: 5,
-    imageId: 'course-computer',
-    progress: 75,
-  },
-  {
-    id: 'diglit-2',
-    title: 'Safe Internet Practices',
-    language: 'Punjabi',
-    description: 'Understand how to stay safe online, identify risks, and protect your information.',
-    modules: 4,
-    imageId: 'course-internet',
-    progress: 50,
-  },
-  {
-    id: 'diglit-3',
-    title: 'Typing Skills',
-    language: 'English',
-    description: 'Improve your typing speed and accuracy with engaging exercises.',
-    modules: 10,
-    imageId: 'course-typing',
-    progress: 20,
-  },
-  {
-    id: 'core-1',
-    title: 'Mathematics Grade 6',
-    language: 'Hindi',
-    description: 'Covering topics from basic arithmetic to introductory geometry for 6th grade.',
-    modules: 12,
-    imageId: 'course-math',
-    progress: 90,
-  },
-  {
-    id: 'core-2',
-    title: 'English Grade 6',
-    language: 'English',
-    description: 'Enhance your reading, writing, and comprehension skills.',
-    modules: 15,
-    imageId: 'course-english',
-    progress: 0,
-  },
-  {
-    id: 'core-3',
-    title: 'Science Grade 6',
-    language: 'Punjabi',
-    description: 'Explore the wonders of biology, chemistry, and physics.',
-    modules: 10,
-    imageId: 'course-science',
-    progress: 0,
-  },
-];
+// Most mock data is now removed and will be fetched from Firestore.
+// We keep sampleQuiz, chatContacts, and conversations as they are not part of the core DB migration yet.
 
-export const students: Student[] = [
-  { id: '1', name: 'Rohan Singh', class: '6th A', avatarId: 'avatar-male-1', overallScore: 82, attendance: 95, completedCourses: 3 },
-  { id: '2', name: 'Priya Kaur', class: '6th A', avatarId: 'avatar-female-1', overallScore: 75, attendance: 88, completedCourses: 2 },
-  { id: '3', name: 'Amit Sharma', class: '6th B', avatarId: 'avatar-male-1', overallScore: 91, attendance: 98, completedCourses: 5 },
-  { id: '4', name: 'Simranjeet Gill', class: '6th B', avatarId: 'avatar-female-1', overallScore: 68, attendance: 85, completedCourses: 1 },
-];
+export const courses: Course[] = [];
+export const students: Student[] = [];
+export const teachers: Teacher[] = [];
 
-export const teachers: Teacher[] = [
-  { id: 'teacher-1', name: 'Mrs. Verma', role: 'Class Teacher', assignment: '6th A', avatarId: 'avatar-teacher' },
-  { id: 'teacher-2', name: 'Mr. Kumar', role: 'Class Teacher', assignment: '6th B', avatarId: 'avatar-teacher-male' },
-  { id: 'teacher-3', name: 'Ms. Reddy', role: 'Subject Teacher', assignment: 'Mathematics', avatarId: 'avatar-teacher' },
-  { id: 'teacher-4', name: 'Mr. Khan', role: 'Subject Teacher', assignment: 'Science', avatarId: 'avatar-teacher-male' },
-  { id: 'teacher-5', name: 'Mrs. Das', role: 'Subject Teacher', assignment: 'English', avatarId: 'avatar-teacher' },
-];
 
 export const sampleQuiz: Quiz = {
   id: 'quiz-1',
