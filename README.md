@@ -7,6 +7,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 
+
+
 GyanSetu is a web application designed to bridge the digital divide in rural education. It provides an interactive learning platform for students, with tools for teachers and principals to manage and track student progress. The application is built with a modern tech stack and features AI-powered tools to offer personalized learning experiences.
 
 ## Tech Stack
